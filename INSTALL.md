@@ -1,9 +1,10 @@
-# Install v0.3.0
+# Install v0.4.1
 
-1. Extract this package.
-2. Copy all extracted contents into the local `FOSv1` repository and replace existing files.
-3. Open a terminal in the repository root.
-4. Activate the virtual environment and run the checks.
+1. Close any open FOS workbook in Excel.
+2. Extract this ZIP.
+3. Copy all extracted files into the local `FOSv1` repository and replace existing files.
+4. Keep the private budget workbook outside the GitHub repository.
+5. From the repository root in PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
@@ -12,8 +13,10 @@ py -m pytest
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-Generate the historical FOS workbook:
+Generate the current FOS workbook:
 
 ```powershell
 py -m src.update "C:\path\to\Budget-Jason-original.xlsx"
 ```
+
+Outputs are written to `output\` and are excluded from GitHub.

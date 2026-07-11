@@ -1,4 +1,4 @@
-"""Verify the complete FOS v0.3.0 data engine."""
+"""Verify the complete FOS v0.4.1 KPI engine."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ from src.historical_pipeline import HistoricalPipeline  # noqa: E402
 from src.extract import HistoricalWorkbookExtractor  # noqa: E402
 from src.validate import HistoricalImportValidator  # noqa: E402
 from src.transform import CategoryRegistry  # noqa: E402
+from src.kpi import KPIEngine  # noqa: E402
 from src.validate import ImportValidator, write_validation_report  # noqa: E402
 
 
@@ -39,6 +40,51 @@ def workbook_sheet_names(workbook_path: Path) -> list[str]:
     if sheets is None:
         return []
     return [sheet.attrib["name"] for sheet in sheets]
+
+
+def verify_current_snapshot_consistency(snapshot) -> None:
+    """Validate snapshot relationships without hardcoding mutable balances."""
+    expected_net_worth = snapshot.total_assets - snapshot.total_liabilities
+    if snapshot.net_worth != expected_net_worth:
+        raise ValueError(
+            "Current net worth calculation mismatch: "
+            f"expected {expected_net_worth}, found {snapshot.net_worth}."
+        )
+    if snapshot.fpi_score is not None:
+        if snapshot.fpi_score < Decimal("0") or snapshot.fpi_score > Decimal("100"):
+            raise ValueError("Current FPI score is outside the valid 0–100 range.")
+        expected_band = KPIEngine._fpi_band(snapshot.fpi_score)
+        if snapshot.fpi_band != expected_band:
+            raise ValueError(
+                "Current FPI band mismatch: "
+                f"expected {expected_band}, found {snapshot.fpi_band}."
+            )
+
+
+def verify_current_snapshot_sheet(worksheet, snapshot) -> None:
+    """Confirm the generated Current_Snapshot sheet matches the calculated snapshot."""
+    cell_net_worth = Decimal(str(worksheet["B7"].value))
+    if cell_net_worth != snapshot.net_worth:
+        raise ValueError(
+            "Current net worth KPI output mismatch: "
+            f"expected {snapshot.net_worth}, found {cell_net_worth}."
+        )
+
+    cell_fpi = worksheet["B16"].value
+    if snapshot.fpi_score is None:
+        if cell_fpi is not None:
+            raise ValueError("Current FPI KPI output should be blank.")
+    elif Decimal(str(cell_fpi)) != snapshot.fpi_score:
+        raise ValueError(
+            "Current FPI KPI output mismatch: "
+            f"expected {snapshot.fpi_score}, found {cell_fpi}."
+        )
+
+    if worksheet["B17"].value != snapshot.fpi_band:
+        raise ValueError(
+            "Current FPI band output mismatch: "
+            f"expected {snapshot.fpi_band}, found {worksheet['B17'].value}."
+        )
 
 
 def verify_required_workbook_aliases(workbook_path: Path, registry: CategoryRegistry) -> None:
@@ -158,7 +204,7 @@ def verify_2025_extraction_validation_and_load(
             output_path,
             source_workbook=workbook_path,
             source_sheet="2025",
-            fos_version="0.3.0",
+            fos_version="0.4.1",
         )
         from openpyxl import load_workbook
 
@@ -191,7 +237,7 @@ def verify_2025_extraction_validation_and_load(
             workbook_path,
             sheet_name="2025",
             output_path=integrated_output,
-            fos_version="0.3.0",
+            fos_version="0.4.1",
         )
         if not integrated_output.is_file():
             raise ValueError("Integrated pipeline did not create the FOS workbook.")
@@ -276,12 +322,22 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
     if "2017 (old)" not in extraction.excluded_sheets:
         raise ValueError("Archived 2017 (old) sheet was not excluded.")
 
+    kpi_engine = KPIEngine(registry)
+    annual_kpis = kpi_engine.calculate_annual(extraction)
+    snapshot = kpi_engine.calculate_current_snapshot(workbook_path, annual_kpis)
+    latest = next(item for item in annual_kpis if item.year == 2025)
+    if latest.wealth_building_rate.quantize(Decimal("0.0001")) != Decimal("0.1089"):
+        raise ValueError("2025 wealth-building rate mismatch.")
+    if latest.financial_flexibility.quantize(Decimal("0.0001")) != Decimal("0.7224"):
+        raise ValueError("2025 financial-flexibility KPI mismatch.")
+    verify_current_snapshot_consistency(snapshot)
+
     with TemporaryDirectory() as temporary_dir:
         output = Path(temporary_dir) / "Historical_FOS.xlsx"
         pipeline = HistoricalPipeline(PROJECT_ROOT).run(
             workbook_path,
             output_path=output,
-            fos_version="0.3.0",
+            fos_version="0.4.1",
         )
         if not output.is_file():
             raise ValueError("Historical pipeline did not create the FOS workbook.")
@@ -301,8 +357,13 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
                 raise ValueError("FactTransactions contains an overlapping AutoFilter.")
             if "FactTransactionsTable" not in workbook["FactTransactions"].tables:
                 raise ValueError("FactTransactionsTable is missing.")
-            if workbook["Dashboard"]["B16"].value != "=COUNTA(DimYear!A:A)-1":
-                raise ValueError("Historical dashboard year formula is missing.")
+            if workbook["Annual_KPIs"].max_row != 19:
+                raise ValueError("Expected 18 annual KPI rows plus header.")
+            if workbook["KPI_Definitions"].max_row != 10:
+                raise ValueError("KPI definitions are missing.")
+            verify_current_snapshot_sheet(workbook["Current_Snapshot"], snapshot)
+            if workbook["Dashboard"]["A9"].value != "Net worth":
+                raise ValueError("KPI dashboard current-position block is missing.")
         finally:
             workbook.close()
         if pipeline.load_result.transaction_rows != 4744:
@@ -320,16 +381,23 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
     print("- Archived 2017 (old) exclusion: OK")
     print("- Historical reconciliation difference: 0")
     print("- Historical FOS workbook load: OK")
+    print("- 2025 wealth-building rate: 10.9%")
+    print("- 2025 financial flexibility: 72.2%")
+    print(f"- Current net worth: ${snapshot.net_worth:,.2f}")
+    if snapshot.fpi_score is None:
+        print("- Provisional FPI: unavailable")
+    else:
+        print(f"- Provisional FPI: {snapshot.fpi_score} ({snapshot.fpi_band})")
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Verify FOS v0.3.0")
+    parser = argparse.ArgumentParser(description="Verify FOS v0.4.1")
     parser.add_argument("--workbook", type=Path, help="Optional private Budget workbook path.")
     args = parser.parse_args()
 
     detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
     registry = CategoryRegistry(PROJECT_ROOT / "config" / "categories.yaml")
 
-    print("FOS v0.3.0 verification")
+    print("FOS v0.4.1 verification")
     print("- Core models: OK")
     print(f"- Configured categories: {registry.category_count()}")
     print(f"- Configured aliases: {registry.alias_count()}")

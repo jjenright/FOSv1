@@ -41,6 +41,15 @@ def build_mixed_history_workbook(path: Path) -> None:
     archived["B1"] = "Jan 1 - Jan 14"
     archived["A2"] = "Pay - JE"
     archived["B2"] = 9999
+
+    balance = workbook.create_sheet("A & L")
+    balance.append(["Item", "Asset or Liability", "Amount", "Comments"])
+    balance.append(["House", "Asset", 500000, "test"])
+    balance.append(["Mortgage", "Liability", 250000, "test"])
+    balance.append(["Savings", "Asset", 12000, "test"])
+    balance.append(["TFSA 1", "Asset", 30000, "test"])
+    balance.append(["Credit Line", "Liability", 5000, "test"])
+    balance.append(["Truck loan", "Liability", 10000, "test"])
     workbook.save(path)
     workbook.close()
 
@@ -78,6 +87,8 @@ def test_historical_pipeline_loads_mixed_layouts(tmp_path) -> None:
         assert workbook["Import_Log"].max_row == 3
         assert workbook["FactTransactions"].max_row == 4
         assert workbook["FactIncome"].max_row == 3
-        assert workbook["Dashboard"]["B16"].value == "=COUNTA(DimYear!A:A)-1"
+        assert workbook["Annual_KPIs"].max_row == 3
+        assert workbook["Current_Snapshot"]["A3"].value == "Current snapshot unavailable."
+        assert workbook["Dashboard"]["A9"].value == "Net worth"
     finally:
         workbook.close()

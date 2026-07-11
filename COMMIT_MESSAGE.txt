@@ -1,1 +1,1 @@
-feat(history): add full historical workbook import
+fix(verify): support updated balance-sheet values

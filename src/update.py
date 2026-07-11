@@ -1,4 +1,4 @@
-"""Command-line entry point for the FOS v0.3.0 data engine."""
+"""Command-line entry point for the FOS v0.4.1 data engine."""
 
 from __future__ import annotations
 
@@ -39,14 +39,14 @@ def main() -> int:
                 args.workbook,
                 sheet_name=args.sheet,
                 output_path=args.output,
-                fos_version="0.3.0",
+                fos_version="0.4.1",
             )
             validation = result.validation
         else:
             result = HistoricalPipeline(PROJECT_ROOT).run(
                 args.workbook,
                 output_path=args.output,
-                fos_version="0.3.0",
+                fos_version="0.4.1",
             )
             validation = result.validation
     except (FileNotFoundError, ValueError) as exc:

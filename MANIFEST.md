@@ -1,25 +1,19 @@
-# v0.3.0 Manifest
+# v0.4.1 Manifest
 
-## Added
+## Purpose
 
-- `src/extract/legacy.py` — legacy pay-period worksheet extraction.
-- `src/extract/historical.py` — workbook-wide extraction and archive exclusion.
-- `src/validate/historical_validator.py` — aggregate and per-sheet validation.
-- `src/load/historical_excel_loader.py` — full-history Excel FOS output.
-- `src/historical_pipeline.py` — end-to-end historical pipeline.
-- Historical extractor and pipeline tests.
+Verification hotfix for mutable balances in the private `A & L` worksheet.
 
 ## Modified
 
-- `src/extract/current.py` — skips balance/total control rows and handles duplicate period labels.
-- `config/categories.yaml` — maps legacy `Visa` payment labels.
-- `src/update.py` — imports the full history by default; `--sheet` remains available.
-- `scripts/verify.py` — verifies the full workbook import and output tables.
+- `scripts/verify.py` — removes hardcoded net-worth and FPI expectations.
+- `tests/test_verification_helpers.py` — covers the corrected $54,000 vehicle-loan case.
+- `src/update.py`, `src/pipeline.py`, and `src/historical_pipeline.py` — use release version 0.4.1.
 - Release documentation and version files.
 
-## Historical import rules
+## Behaviour
 
-- Imports 2008–2014, 2016, 2017, and 2018–2026.
-- Excludes `2017 (old)` to prevent double counting.
-- Preserves unknown labels in Exceptions instead of guessing.
-- Reconciles every extracted source row to either a normalized record or an exception.
+- Net worth is validated as current assets minus current liabilities.
+- Generated `Current_Snapshot` cells are checked against the calculated snapshot.
+- FPI is checked for a valid 0–100 range and the correct score band.
+- No KPI formulas or financial classifications changed.

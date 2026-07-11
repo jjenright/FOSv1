@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from src.extract import HistoricalWorkbookExtractor, LayoutDetector
+from src.kpi import KPIEngine
 from src.load import HistoricalExcelFOSLoader, LoadResult
 from src.transform import CategoryRegistry
 from src.validate import (
@@ -39,7 +40,7 @@ class HistoricalPipeline:
         workbook_path: str | Path,
         *,
         output_path: str | Path | None = None,
-        fos_version: str = "0.3.0",
+        fos_version: str = "0.4.1",
         sheets: tuple[str, ...] | list[str] | None = None,
     ) -> HistoricalPipelineResult:
         source = Path(workbook_path)
@@ -63,12 +64,22 @@ class HistoricalPipeline:
             messages = "; ".join(issue.message for issue in validation.errors)
             raise ValueError(f"Historical import validation failed: {messages}")
 
+        kpi_engine = KPIEngine(self.registry)
+        annual_kpis = kpi_engine.calculate_annual(extraction)
+        current_snapshot = (
+            kpi_engine.calculate_current_snapshot(source, annual_kpis)
+            if any(item.coverage_status == "Complete" for item in annual_kpis)
+            else None
+        )
+
         load_result = HistoricalExcelFOSLoader(self.registry).load_historical(
             extraction,
             validation,
             destination,
             source_workbook=source,
             fos_version=fos_version,
+            annual_kpis=annual_kpis,
+            current_snapshot=current_snapshot,
         )
         return HistoricalPipelineResult(
             load_result=load_result,
