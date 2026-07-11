@@ -15,6 +15,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
 from src.extract import HistoricalExtractionResult
+from src.insights import InsightReport
 from src.kpi import AnnualKPI, CurrentSnapshot
 from src.load.excel_loader import (
     BLACK,
@@ -39,10 +40,14 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
 
     REQUIRED_SHEETS = (
         "Dashboard",
+        "Insights",
+        "Action_Plan",
+        "Spending_Evolution",
         "Import_Log",
         "Annual_KPIs",
         "Current_Snapshot",
         "KPI_Definitions",
+        "Insight_Definitions",
         "DimYear",
         "DimCategory",
         "FactTransactions",
@@ -65,6 +70,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         imported_at: datetime | None = None,
         annual_kpis: tuple[AnnualKPI, ...] = (),
         current_snapshot: CurrentSnapshot | None = None,
+        insight_report: InsightReport | None = None,
     ) -> LoadResult:
         if not validation.is_valid:
             messages = "; ".join(issue.message for issue in validation.errors)
@@ -88,6 +94,10 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         self._write_annual_kpis(workbook["Annual_KPIs"], annual_kpis)
         self._write_current_snapshot(workbook["Current_Snapshot"], current_snapshot)
         self._write_kpi_definitions(workbook["KPI_Definitions"])
+        self._write_insights(workbook["Insights"], insight_report)
+        self._write_action_plan(workbook["Action_Plan"], insight_report)
+        self._write_spending_evolution(workbook["Spending_Evolution"], insight_report)
+        self._write_insight_definitions(workbook["Insight_Definitions"])
         self._write_import_log_historical(
             workbook["Import_Log"],
             extraction=extraction,
@@ -106,6 +116,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
             imported_at=imported_at,
             annual_kpis=annual_kpis,
             current_snapshot=current_snapshot,
+            insight_report=insight_report,
         )
 
         workbook.save(destination)
@@ -439,6 +450,277 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
             for cell in row:
                 cell.alignment = Alignment(vertical="top", wrap_text=True)
 
+    def _write_insights(
+        self,
+        worksheet: Any,
+        report: InsightReport | None,
+    ) -> None:
+        headers = [
+            "Rank",
+            "Priority",
+            "Theme",
+            "Headline",
+            "Evidence",
+            "Implication",
+            "Recommended Action",
+        ]
+        rows: list[list[Any]] = []
+        if report is not None:
+            rows = [
+                [
+                    item.rank,
+                    item.priority,
+                    item.theme,
+                    item.headline,
+                    item.evidence,
+                    item.implication,
+                    item.recommended_action,
+                ]
+                for item in report.insights
+            ]
+        self._write_table(worksheet, headers, rows, "FinancialInsightsTable")
+        worksheet.freeze_panes = "A2"
+        self._set_widths(worksheet, [8, 12, 18, 42, 62, 58, 62])
+        for row in range(2, worksheet.max_row + 1):
+            for column in range(1, 8):
+                worksheet.cell(row, column).alignment = Alignment(
+                    vertical="top", wrap_text=True
+                )
+            priority = worksheet.cell(row, 2).value
+            worksheet.cell(row, 2).fill = PatternFill(
+                "solid", fgColor=self._priority_fill(str(priority))
+            )
+
+        worksheet["I1"] = "Insight Summary"
+        worksheet["I1"].font = Font(bold=True, color=WHITE, size=12)
+        worksheet["I1"].fill = PatternFill("solid", fgColor=DARK_BLUE)
+        worksheet.merge_cells("I1:K1")
+        if report is None:
+            worksheet["I3"] = "Insight report unavailable."
+            return
+        summary = [
+            ("Latest complete year", report.latest_year, "year"),
+            (
+                "Benchmark years",
+                ", ".join(str(year) for year in report.benchmark_years) or "N/A",
+                "text",
+            ),
+            ("Monthly core spending", float(report.monthly_core_spending), "currency"),
+            (
+                "3-month reserve target",
+                float(report.emergency_target_amount),
+                "currency",
+            ),
+            ("Reserve funding gap", float(report.emergency_fund_gap), "currency"),
+        ]
+        for row, (label, value, kind) in enumerate(summary, start=3):
+            worksheet.cell(row, 9, label)
+            worksheet.cell(row, 10, value)
+            worksheet.cell(row, 9).font = Font(bold=True, color=DARK_BLUE)
+            worksheet.cell(row, 9).fill = PatternFill("solid", fgColor=LIGHT_BLUE)
+            worksheet.cell(row, 10).fill = PatternFill("solid", fgColor=LIGHT_BLUE)
+            if kind == "currency":
+                worksheet.cell(row, 10).number_format = CURRENCY_FORMAT
+        worksheet.column_dimensions["I"].width = 26
+        worksheet.column_dimensions["J"].width = 22
+        worksheet.column_dimensions["K"].width = 4
+
+    def _write_action_plan(
+        self,
+        worksheet: Any,
+        report: InsightReport | None,
+    ) -> None:
+        headers = [
+            "Rank",
+            "Priority",
+            "Area",
+            "Action",
+            "Why Now",
+            "Current",
+            "Target",
+            "Gap / Headroom",
+            "Unit",
+            "Measurement",
+            "Status",
+        ]
+        rows: list[list[Any]] = []
+        if report is not None:
+            rows = [
+                [
+                    item.rank,
+                    item.priority,
+                    item.area,
+                    item.action,
+                    item.rationale,
+                    float(item.current_value) if item.current_value is not None else None,
+                    float(item.target_value) if item.target_value is not None else None,
+                    float(item.gap) if item.gap is not None else None,
+                    item.unit,
+                    item.measurement,
+                    item.status,
+                ]
+                for item in report.actions
+            ]
+        self._write_table(worksheet, headers, rows, "ActionPlanTable")
+        worksheet.freeze_panes = "A2"
+        self._set_widths(
+            worksheet,
+            [8, 12, 18, 48, 55, 16, 16, 18, 14, 42, 16],
+        )
+        for row in range(2, worksheet.max_row + 1):
+            for column in range(1, 12):
+                worksheet.cell(row, column).alignment = Alignment(
+                    vertical="top", wrap_text=True
+                )
+            for column in (6, 7, 8):
+                worksheet.cell(row, column).number_format = CURRENCY_FORMAT
+            priority = worksheet.cell(row, 2).value
+            worksheet.cell(row, 2).fill = PatternFill(
+                "solid", fgColor=self._priority_fill(str(priority))
+            )
+            status = str(worksheet.cell(row, 11).value)
+            status_fill = {
+                "Complete": LIGHT_GREEN,
+                "On track": LIGHT_GREEN,
+                "In progress": LIGHT_BLUE,
+                "Monitor": LIGHT_YELLOW,
+                "Review": LIGHT_YELLOW,
+                "Needs action": LIGHT_RED,
+            }.get(status, LIGHT_BLUE)
+            worksheet.cell(row, 11).fill = PatternFill("solid", fgColor=status_fill)
+
+    def _write_spending_evolution(
+        self,
+        worksheet: Any,
+        report: InsightReport | None,
+    ) -> None:
+        headers = [
+            "MetricID",
+            "Group",
+            "Metric",
+            "LatestYear",
+            "LatestValue ($)",
+            "PriorYear",
+            "PriorValue ($)",
+            "ChangeVsPrior ($)",
+            "ChangeVsPrior (%)",
+            "BenchmarkYears",
+            "BenchmarkAverage ($)",
+            "ChangeVsBenchmark ($)",
+            "ChangeVsBenchmark (%)",
+            "Direction",
+            "Signal",
+        ]
+        rows: list[list[Any]] = []
+        if report is not None:
+            for item in report.spending_evolution:
+                rows.append(
+                    [
+                        item.metric_id,
+                        item.metric_group,
+                        item.metric,
+                        item.latest_year,
+                        float(item.latest_value),
+                        item.prior_year,
+                        float(item.prior_value) if item.prior_value is not None else None,
+                        float(item.change_vs_prior_amount)
+                        if item.change_vs_prior_amount is not None
+                        else None,
+                        float(item.change_vs_prior_ratio)
+                        if item.change_vs_prior_ratio is not None
+                        else None,
+                        ", ".join(str(year) for year in item.benchmark_years),
+                        float(item.benchmark_average)
+                        if item.benchmark_average is not None
+                        else None,
+                        float(item.change_vs_benchmark_amount)
+                        if item.change_vs_benchmark_amount is not None
+                        else None,
+                        float(item.change_vs_benchmark_ratio)
+                        if item.change_vs_benchmark_ratio is not None
+                        else None,
+                        item.direction,
+                        item.signal,
+                    ]
+                )
+        self._write_table(worksheet, headers, rows, "SpendingEvolutionTable")
+        worksheet.freeze_panes = "A2"
+        for row in range(2, worksheet.max_row + 1):
+            for column in (5, 7, 8, 11, 12):
+                worksheet.cell(row, column).number_format = CURRENCY_FORMAT
+            for column in (9, 13):
+                worksheet.cell(row, column).number_format = '0.0%;[Red](0.0%);-'
+            signal = str(worksheet.cell(row, 15).value)
+            worksheet.cell(row, 15).fill = PatternFill(
+                "solid",
+                fgColor={
+                    "Favourable": LIGHT_GREEN,
+                    "Stable": LIGHT_BLUE,
+                    "Watch": LIGHT_YELLOW,
+                    "Context": LIGHT_BLUE,
+                }.get(signal, LIGHT_BLUE),
+            )
+        self._set_widths(
+            worksheet,
+            [28, 20, 30, 12, 18, 12, 18, 20, 20, 20, 22, 24, 24, 14, 14],
+        )
+
+    def _write_insight_definitions(self, worksheet: Any) -> None:
+        headers = ["Rule", "FOS v0.6.0 definition", "Use", "Limitation"]
+        rows = [
+            [
+                "Benchmark window",
+                "Up to the three comparison-eligible years immediately before the latest complete year.",
+                "Provides recent context without treating partial years as equivalent.",
+                "A short benchmark can be affected by unusual one-time years.",
+            ],
+            [
+                "Three-month reserve target",
+                "Latest complete-year core spending ÷ 12 × 3.",
+                "Creates a measurable liquidity target.",
+                "An internal FOS operating rule, not an external financial standard.",
+            ],
+            [
+                "Fixed-cost watch level",
+                "30% of latest complete-year true income.",
+                "Flags reduced flexibility before the FPI fixed-cost pressure begins.",
+                "Category mapping and household circumstances affect interpretation.",
+            ],
+            [
+                "Wealth-building floor",
+                "10% of latest complete-year true income.",
+                "Protects long-term saving momentum while other actions are addressed.",
+                "Does not include investment growth or employer-only pension value.",
+            ],
+            [
+                "Largest spending increases",
+                "Mapped non-transfer master categories ranked by dollar increase versus the prior comparison year.",
+                "Directs transaction review to the largest changes first.",
+                "An increase is not automatically wasteful or avoidable.",
+            ],
+            [
+                "Action-plan gaps",
+                "Current value compared with the stated FOS target or watch level.",
+                "Turns insights into measurable operating actions.",
+                "Gap values are directional and do not replace a detailed financial plan.",
+            ],
+        ]
+        self._write_table(worksheet, headers, rows, "InsightDefinitionsTable")
+        worksheet.freeze_panes = "A2"
+        self._set_widths(worksheet, [28, 64, 58, 64])
+        for row in worksheet.iter_rows(min_row=2):
+            for cell in row:
+                cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+    @staticmethod
+    def _priority_fill(priority: str) -> str:
+        return {
+            "High": LIGHT_RED,
+            "Medium": LIGHT_YELLOW,
+            "Low": LIGHT_GREEN,
+            "Protect": LIGHT_GREEN,
+        }.get(priority, LIGHT_BLUE)
+
     def _write_dashboard_historical(
         self,
         worksheet: Any,
@@ -450,8 +732,9 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         imported_at: datetime,
         annual_kpis: tuple[AnnualKPI, ...],
         current_snapshot: CurrentSnapshot | None,
+        insight_report: InsightReport | None,
     ) -> None:
-        """Create the v0.5.0 executive dashboard.
+        """Create the v0.6.0 executive dashboard.
 
         The dashboard intentionally displays calculated values rather than adding
         another calculation layer. Hidden helper columns provide compact,
@@ -676,6 +959,53 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         worksheet["A57"].fill = PatternFill("solid", fgColor=LIGHT_YELLOW)
         worksheet["A57"].font = Font(color="7F6000")
 
+        self._write_dashboard_section(worksheet, 61, "Executive Takeaways")
+        if insight_report is not None:
+            for index, insight in enumerate(insight_report.insights[:3]):
+                start_row = 62 + index * 2
+                worksheet.merge_cells(
+                    start_row=start_row,
+                    start_column=1,
+                    end_row=start_row,
+                    end_column=3,
+                )
+                worksheet.merge_cells(
+                    start_row=start_row,
+                    start_column=4,
+                    end_row=start_row,
+                    end_column=15,
+                )
+                worksheet.merge_cells(
+                    start_row=start_row + 1,
+                    start_column=1,
+                    end_row=start_row + 1,
+                    end_column=15,
+                )
+                label = worksheet.cell(start_row, 1)
+                label.value = f"#{insight.rank} {insight.priority} — {insight.theme}"
+                label.font = Font(bold=True, color=DARK_BLUE)
+                label.fill = PatternFill(
+                    "solid", fgColor=self._priority_fill(insight.priority)
+                )
+                headline = worksheet.cell(start_row, 4)
+                headline.value = insight.headline
+                headline.font = Font(bold=True, color=BLACK)
+                headline.fill = PatternFill(
+                    "solid", fgColor=self._priority_fill(insight.priority)
+                )
+                detail = worksheet.cell(start_row + 1, 1)
+                detail.value = insight.evidence + " Action: " + insight.recommended_action
+                detail.alignment = Alignment(wrap_text=True, vertical="top")
+                detail.fill = PatternFill("solid", fgColor="F2F2F2")
+            worksheet.merge_cells("A68:O68")
+            worksheet["A68"] = "Open Insights and Action_Plan for the complete evidence and measurable targets."
+            worksheet["A68"].hyperlink = "#'Insights'!A1"
+            worksheet["A68"].style = "Hyperlink"
+            worksheet["A68"].alignment = Alignment(horizontal="center")
+        else:
+            worksheet.merge_cells("A62:O63")
+            worksheet["A62"] = "Insight report unavailable."
+
         # Balanced dashboard widths. Helper columns P:AB remain hidden.
         dashboard_widths = [12, 12, 12, 12, 16, 12, 12, 12, 12, 15, 12, 12, 14, 12, 12]
         for column, width in enumerate(dashboard_widths, start=1):
@@ -691,6 +1021,9 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
             worksheet.row_dimensions[row].height = 22
         for row in (57, 58, 59):
             worksheet.row_dimensions[row].height = 22
+        worksheet.row_dimensions[61].height = 22
+        for row in range(62, 68):
+            worksheet.row_dimensions[row].height = 30
 
     @staticmethod
     def _write_dashboard_section(worksheet: Any, row: int, title: str) -> None:

@@ -1,28 +1,25 @@
-# v0.5.0 Manifest
+# v0.6.0 Manifest
 
-## Purpose
+## Core additions
 
-Provide the first executive dashboard for the Family Financial Operating System.
+- `src/insights/engine.py` — spending evolution, insights, and action plan
+- `src/insights/__init__.py` — public insight interfaces
+- `tests/test_insights_engine.py` — insight-engine unit tests
+- `docs/insights_guide.md` — workbook interpretation and operating rules
 
-## Modified
+## Updated integration
 
-- `src/load/historical_excel_loader.py` — executive dashboard cards, status strip,
-  hidden chart datasets, four charts, print layout, and dashboard notes.
-- `tests/test_historical_pipeline.py` — dashboard structure, chart, hidden-column,
-  and AutoFilter regression checks.
-- `src/update.py`, `src/pipeline.py`, `src/historical_pipeline.py`, and
-  `scripts/verify.py` — release version 0.5.0.
-- `docs/dashboard_guide.md` — dashboard interpretation guide.
-- Release documentation and version files.
+- `src/historical_pipeline.py` — calculates the insight report
+- `src/load/historical_excel_loader.py` — writes insight sheets and dashboard takeaways
+- `src/update.py` — release version 0.6.0
+- `scripts/verify.py` — full insight-layer verification
 
-## Dashboard content
+## Generated private outputs
 
-- Current position: net worth, liquid savings, total debt, emergency fund, and FPI.
-- Latest complete year: income, known expenses, wealth building, savings velocity,
-  and financial flexibility.
-- Status strip: validation, coverage, unmapped amount, and comparison eligibility.
-- Charts: annual cash flow, key ratios, current balance sheet, and spending mix.
+The update command creates these files under `output\`:
 
-## Calculation integrity
+- `Financial_Operating_System.xlsx`
+- `historical_validation_summary.json`
+- `historical_exceptions.csv`
 
-No KPI formula, category classification, import, or reconciliation logic changed.
+Generated outputs and source budget workbooks are intentionally excluded from Git.

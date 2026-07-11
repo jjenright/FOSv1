@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from src.extract import HistoricalWorkbookExtractor, LayoutDetector
+from src.insights import InsightReport, InsightsEngine
 from src.kpi import KPIEngine
 from src.load import HistoricalExcelFOSLoader, LoadResult
 from src.transform import CategoryRegistry
@@ -25,6 +26,7 @@ class HistoricalPipelineResult:
     validation: HistoricalValidationReport
     validation_summary_path: Path
     exceptions_path: Path
+    insight_report: InsightReport | None = None
 
 
 class HistoricalPipeline:
@@ -40,7 +42,7 @@ class HistoricalPipeline:
         workbook_path: str | Path,
         *,
         output_path: str | Path | None = None,
-        fos_version: str = "0.5.0",
+        fos_version: str = "0.6.0",
         sheets: tuple[str, ...] | list[str] | None = None,
     ) -> HistoricalPipelineResult:
         source = Path(workbook_path)
@@ -71,6 +73,13 @@ class HistoricalPipeline:
             if any(item.coverage_status == "Complete" for item in annual_kpis)
             else None
         )
+        insight_report = (
+            InsightsEngine(self.registry).analyze(
+                extraction, annual_kpis, current_snapshot
+            )
+            if current_snapshot is not None
+            else None
+        )
 
         load_result = HistoricalExcelFOSLoader(self.registry).load_historical(
             extraction,
@@ -80,10 +89,12 @@ class HistoricalPipeline:
             fos_version=fos_version,
             annual_kpis=annual_kpis,
             current_snapshot=current_snapshot,
+            insight_report=insight_report,
         )
         return HistoricalPipelineResult(
             load_result=load_result,
             validation=validation,
             validation_summary_path=summary_path,
             exceptions_path=exceptions_path,
+            insight_report=insight_report,
         )

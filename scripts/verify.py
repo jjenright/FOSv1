@@ -1,4 +1,4 @@
-"""Verify the complete FOS v0.5.0 KPI engine."""
+"""Verify the complete FOS v0.6.0 insight engine."""
 
 from __future__ import annotations
 
@@ -24,6 +24,7 @@ from src.extract import HistoricalWorkbookExtractor  # noqa: E402
 from src.validate import HistoricalImportValidator  # noqa: E402
 from src.transform import CategoryRegistry  # noqa: E402
 from src.kpi import KPIEngine  # noqa: E402
+from src.insights import InsightsEngine  # noqa: E402
 from src.validate import ImportValidator, write_validation_report  # noqa: E402
 
 
@@ -204,7 +205,7 @@ def verify_2025_extraction_validation_and_load(
             output_path,
             source_workbook=workbook_path,
             source_sheet="2025",
-            fos_version="0.5.0",
+            fos_version="0.6.0",
         )
         from openpyxl import load_workbook
 
@@ -237,7 +238,7 @@ def verify_2025_extraction_validation_and_load(
             workbook_path,
             sheet_name="2025",
             output_path=integrated_output,
-            fos_version="0.5.0",
+            fos_version="0.6.0",
         )
         if not integrated_output.is_file():
             raise ValueError("Integrated pipeline did not create the FOS workbook.")
@@ -331,13 +332,28 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
     if latest.financial_flexibility.quantize(Decimal("0.0001")) != Decimal("0.7224"):
         raise ValueError("2025 financial-flexibility KPI mismatch.")
     verify_current_snapshot_consistency(snapshot)
+    insight_report = InsightsEngine(registry).analyze(
+        extraction, annual_kpis, snapshot
+    )
+    if insight_report.latest_year != 2025:
+        raise ValueError("Insight report did not select 2025 as the latest complete year.")
+    if insight_report.benchmark_years != (2022, 2023, 2024):
+        raise ValueError("Insight benchmark years mismatch.")
+    expected_reserve_target = latest.core_spending / Decimal("12") * Decimal("3")
+    expected_reserve_gap = max(Decimal("0"), expected_reserve_target - snapshot.savings_cash)
+    if insight_report.emergency_target_amount != expected_reserve_target:
+        raise ValueError("Three-month emergency target mismatch.")
+    if insight_report.emergency_fund_gap != expected_reserve_gap:
+        raise ValueError("Emergency-fund gap mismatch.")
+    if len(insight_report.insights) != 6 or len(insight_report.actions) != 6:
+        raise ValueError("Expected six insights and six action-plan items.")
 
     with TemporaryDirectory() as temporary_dir:
         output = Path(temporary_dir) / "Historical_FOS.xlsx"
         pipeline = HistoricalPipeline(PROJECT_ROOT).run(
             workbook_path,
             output_path=output,
-            fos_version="0.5.0",
+            fos_version="0.6.0",
         )
         if not output.is_file():
             raise ValueError("Historical pipeline did not create the FOS workbook.")
@@ -361,6 +377,14 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
                 raise ValueError("Expected 18 annual KPI rows plus header.")
             if workbook["KPI_Definitions"].max_row != 10:
                 raise ValueError("KPI definitions are missing.")
+            if workbook["Insights"].max_row != 7:
+                raise ValueError("Expected six financial insights plus header.")
+            if workbook["Action_Plan"].max_row != 7:
+                raise ValueError("Expected six action-plan items plus header.")
+            if workbook["Spending_Evolution"].max_row < 10:
+                raise ValueError("Spending evolution output is incomplete.")
+            if workbook["Insight_Definitions"].max_row != 7:
+                raise ValueError("Insight definitions are missing.")
             verify_current_snapshot_sheet(workbook["Current_Snapshot"], snapshot)
             dashboard = workbook["Dashboard"]
             if dashboard["A1"].value != "Family Financial Operating System — Executive Dashboard":
@@ -375,6 +399,8 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
                 raise ValueError("Executive dashboard helper columns must remain hidden.")
             if dashboard.auto_filter.ref is not None:
                 raise ValueError("Executive dashboard contains an unexpected AutoFilter.")
+            if dashboard["A61"].value != "Executive Takeaways":
+                raise ValueError("Executive dashboard insight summary is missing.")
         finally:
             workbook.close()
         if pipeline.load_result.transaction_rows != 4744:
@@ -383,6 +409,8 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
             raise ValueError("Historical validation summary is missing.")
         if not pipeline.exceptions_path.is_file():
             raise ValueError("Historical exceptions report is missing.")
+        if pipeline.insight_report is None:
+            raise ValueError("Historical pipeline insight report is missing.")
 
     print(f"- Historical worksheets imported: {actual['sheets']}")
     print(f"- Historical pay periods extracted: {actual['periods']}")
@@ -393,6 +421,9 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
     print("- Historical reconciliation difference: 0")
     print("- Historical FOS workbook load: OK")
     print("- Executive dashboard cards and charts: OK")
+    print("- Spending evolution, financial insights and action plan: OK")
+    print(f"- Three-month reserve target: ${insight_report.emergency_target_amount:,.2f}")
+    print(f"- Reserve funding gap: ${insight_report.emergency_fund_gap:,.2f}")
     print("- 2025 wealth-building rate: 10.9%")
     print("- 2025 financial flexibility: 72.2%")
     print(f"- Current net worth: ${snapshot.net_worth:,.2f}")
@@ -402,14 +433,14 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
         print(f"- Provisional FPI: {snapshot.fpi_score} ({snapshot.fpi_band})")
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Verify FOS v0.5.0")
+    parser = argparse.ArgumentParser(description="Verify FOS v0.6.0")
     parser.add_argument("--workbook", type=Path, help="Optional private Budget workbook path.")
     args = parser.parse_args()
 
     detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
     registry = CategoryRegistry(PROJECT_ROOT / "config" / "categories.yaml")
 
-    print("FOS v0.5.0 verification")
+    print("FOS v0.6.0 verification")
     print("- Core models: OK")
     print(f"- Configured categories: {registry.category_count()}")
     print(f"- Configured aliases: {registry.alias_count()}")

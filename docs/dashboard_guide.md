@@ -19,9 +19,14 @@ and financial flexibility.
 
 ## Trend Charts
 
-Trend charts use years marked `ComparisonEligible` in `Annual_KPIs`. When no year
-meets that condition, the dashboard falls back to complete years and then to all
-available years. Partial years remain visible in `Annual_KPIs` for reference.
+Trend charts use years marked `ComparisonEligible` in `Annual_KPIs`. Partial years
+remain visible in `Annual_KPIs` but are excluded from direct trend interpretation.
+
+## Executive Takeaways
+
+The three highest-ranked observations from `Insights` appear below the charts.
+The complete evidence and measurable targets remain in `Insights` and
+`Action_Plan`.
 
 ## Data-quality strip
 

@@ -35,7 +35,7 @@ class CurrentYearPipeline:
         *,
         sheet_name: str = "2025",
         output_path: str | Path | None = None,
-        fos_version: str = "0.5.0",
+        fos_version: str = "0.6.0",
     ) -> PipelineResult:
         """Run the complete current-layout import pipeline."""
 
@@ -47,7 +47,7 @@ class CurrentYearPipeline:
         if detected_layout != "current":
             raise ValueError(
                 f"Worksheet '{sheet_name}' uses layout '{detected_layout}', "
-                "but v0.5.0 supports current-layout imports only."
+                "but v0.6.0 supports current-layout imports only."
             )
 
         destination = Path(output_path) if output_path else (

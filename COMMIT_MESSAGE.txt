@@ -1,1 +1,1 @@
-feat(dashboard): add executive financial dashboard
+feat(insights): add financial insights and prioritized action plan
