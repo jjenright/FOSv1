@@ -65,7 +65,7 @@ class CurrentSnapshot:
 
 
 class KPIEngine:
-    """Produce FOS v0.4.1 KPIs using only existing workbook data."""
+    """Produce FOS v0.5.0 KPIs using only existing workbook data."""
 
     TARGETED_DEBT_IDS = frozenset({"TRF006", "FIN001"})
     EXCLUDED_TRANSFER_IDS = frozenset({"TRF005", "TRF007", "TRF008"})

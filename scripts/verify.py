@@ -1,4 +1,4 @@
-"""Verify the complete FOS v0.4.1 KPI engine."""
+"""Verify the complete FOS v0.5.0 KPI engine."""
 
 from __future__ import annotations
 
@@ -204,7 +204,7 @@ def verify_2025_extraction_validation_and_load(
             output_path,
             source_workbook=workbook_path,
             source_sheet="2025",
-            fos_version="0.4.1",
+            fos_version="0.5.0",
         )
         from openpyxl import load_workbook
 
@@ -237,7 +237,7 @@ def verify_2025_extraction_validation_and_load(
             workbook_path,
             sheet_name="2025",
             output_path=integrated_output,
-            fos_version="0.4.1",
+            fos_version="0.5.0",
         )
         if not integrated_output.is_file():
             raise ValueError("Integrated pipeline did not create the FOS workbook.")
@@ -337,7 +337,7 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
         pipeline = HistoricalPipeline(PROJECT_ROOT).run(
             workbook_path,
             output_path=output,
-            fos_version="0.4.1",
+            fos_version="0.5.0",
         )
         if not output.is_file():
             raise ValueError("Historical pipeline did not create the FOS workbook.")
@@ -362,8 +362,19 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
             if workbook["KPI_Definitions"].max_row != 10:
                 raise ValueError("KPI definitions are missing.")
             verify_current_snapshot_sheet(workbook["Current_Snapshot"], snapshot)
-            if workbook["Dashboard"]["A9"].value != "Net worth":
-                raise ValueError("KPI dashboard current-position block is missing.")
+            dashboard = workbook["Dashboard"]
+            if dashboard["A1"].value != "Family Financial Operating System — Executive Dashboard":
+                raise ValueError("Executive dashboard title is missing.")
+            if dashboard["A8"].value != "Net Worth":
+                raise ValueError("Executive dashboard current-position cards are missing.")
+            if dashboard["A14"].value != "True Income":
+                raise ValueError("Executive dashboard latest-year cards are missing.")
+            if len(dashboard._charts) != 4:
+                raise ValueError("Executive dashboard must contain four charts.")
+            if not dashboard.column_dimensions["P"].hidden or not dashboard.column_dimensions["AB"].hidden:
+                raise ValueError("Executive dashboard helper columns must remain hidden.")
+            if dashboard.auto_filter.ref is not None:
+                raise ValueError("Executive dashboard contains an unexpected AutoFilter.")
         finally:
             workbook.close()
         if pipeline.load_result.transaction_rows != 4744:
@@ -381,6 +392,7 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
     print("- Archived 2017 (old) exclusion: OK")
     print("- Historical reconciliation difference: 0")
     print("- Historical FOS workbook load: OK")
+    print("- Executive dashboard cards and charts: OK")
     print("- 2025 wealth-building rate: 10.9%")
     print("- 2025 financial flexibility: 72.2%")
     print(f"- Current net worth: ${snapshot.net_worth:,.2f}")
@@ -390,14 +402,14 @@ def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) ->
         print(f"- Provisional FPI: {snapshot.fpi_score} ({snapshot.fpi_band})")
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Verify FOS v0.4.1")
+    parser = argparse.ArgumentParser(description="Verify FOS v0.5.0")
     parser.add_argument("--workbook", type=Path, help="Optional private Budget workbook path.")
     args = parser.parse_args()
 
     detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
     registry = CategoryRegistry(PROJECT_ROOT / "config" / "categories.yaml")
 
-    print("FOS v0.4.1 verification")
+    print("FOS v0.5.0 verification")
     print("- Core models: OK")
     print(f"- Configured categories: {registry.category_count()}")
     print(f"- Configured aliases: {registry.alias_count()}")

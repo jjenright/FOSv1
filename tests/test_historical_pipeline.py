@@ -89,6 +89,32 @@ def test_historical_pipeline_loads_mixed_layouts(tmp_path) -> None:
         assert workbook["FactIncome"].max_row == 3
         assert workbook["Annual_KPIs"].max_row == 3
         assert workbook["Current_Snapshot"]["A3"].value == "Current snapshot unavailable."
-        assert workbook["Dashboard"]["A9"].value == "Net worth"
+        assert workbook["Dashboard"]["A8"].value == "Net Worth"
+    finally:
+        workbook.close()
+
+
+def test_executive_dashboard_contains_cards_charts_and_hidden_helper_data(tmp_path) -> None:
+    source = tmp_path / "Budget.xlsx"
+    output = tmp_path / "Financial_Operating_System.xlsx"
+    build_mixed_history_workbook(source)
+
+    HistoricalPipeline(PROJECT_ROOT).run(
+        source,
+        output_path=output,
+        sheets=("2010", "2017"),
+        fos_version="test",
+    )
+
+    workbook = load_workbook(output, data_only=False, read_only=False)
+    try:
+        dashboard = workbook["Dashboard"]
+        assert dashboard["A1"].value == "Family Financial Operating System — Executive Dashboard"
+        assert dashboard["A14"].value == "True Income"
+        assert dashboard["M14"].value == "Financial Flexibility"
+        assert len(dashboard._charts) == 4
+        assert dashboard.column_dimensions["P"].hidden is True
+        assert dashboard.column_dimensions["AB"].hidden is True
+        assert dashboard.auto_filter.ref is None
     finally:
         workbook.close()

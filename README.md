@@ -5,16 +5,17 @@ records, annual KPIs, a current financial snapshot, and an Excel reporting workb
 
 ## Current release
 
-**v0.4.1 — KPI Engine**
+**v0.5.0 — Executive Dashboard**
 
-The full update now produces:
+The full update produces:
 
 - Normalized historical transactions and income
 - Import validation and exceptions
-- Annual KPI history
-- Current assets, liabilities, and net worth
+- Annual KPI history and current balance-sheet snapshot
 - Provisional Financial Pressure Index (FPI v1)
-- KPI summary dashboard
+- Executive dashboard with current-position and latest-year KPI cards
+- Comparison-eligible cash-flow and ratio trends
+- Current balance-sheet and latest-year spending-mix charts
 
 ## Run
 

@@ -40,7 +40,7 @@ class HistoricalPipeline:
         workbook_path: str | Path,
         *,
         output_path: str | Path | None = None,
-        fos_version: str = "0.4.1",
+        fos_version: str = "0.5.0",
         sheets: tuple[str, ...] | list[str] | None = None,
     ) -> HistoricalPipelineResult:
         source = Path(workbook_path)

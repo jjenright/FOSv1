@@ -1,4 +1,4 @@
-# Install v0.4.1
+# Install v0.5.0
 
 1. Close any open FOS workbook in Excel.
 2. Extract this ZIP.
@@ -19,4 +19,5 @@ Generate the current FOS workbook:
 py -m src.update "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-Outputs are written to `output\` and are excluded from GitHub.
+Open `output\Financial_Operating_System.xlsx` and use the first worksheet,
+`Dashboard`, as the executive view. Outputs under `output\` are excluded from GitHub.

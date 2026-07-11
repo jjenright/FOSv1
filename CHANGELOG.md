@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.0
+
+- Rebuilt the first worksheet as an executive financial dashboard.
+- Added current-position and latest complete-year KPI cards.
+- Added validation, data-coverage, unmapped-amount, and trend-eligibility status.
+- Added annual cash-flow, ratio-trend, balance-sheet, and spending-mix charts.
+- Excluded partial or lower-coverage years from trend charts where comparison-eligible years exist.
+- Added hidden chart-helper data, print layout, and dashboard regression tests.
+- Preserved all v0.4.1 KPI, classification, and reconciliation logic.
+
 ## v0.4.1
 
 - Removed hardcoded current net-worth and FPI values from private-workbook verification.

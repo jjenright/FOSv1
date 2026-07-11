@@ -1,4 +1,4 @@
-# Verify v0.4.1
+# Verify v0.5.0
 
 Run from the repository root:
 
@@ -13,6 +13,8 @@ Expected result:
 - All tests pass.
 - 18 official annual worksheets import.
 - Historical reconciliation difference is zero.
-- Current net worth reconciles to the current values in the source `A & L` sheet.
-- FPI and its band are validated dynamically.
+- Current net worth reconciles to the current `A & L` balances.
+- The executive dashboard contains KPI cards and four charts.
+- Hidden chart-helper columns remain hidden.
+- Excel tables remain structurally valid and no overlapping AutoFilter is created.
 - Verification prints `Verification PASSED`.
