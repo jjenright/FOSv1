@@ -1,4 +1,4 @@
-"""Verify the FOS v0.2.0-alpha.5 components."""
+"""Verify the complete FOS v0.2.0 data engine."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.extract import CurrentLayoutExtractor, LayoutDetector  # noqa: E402
 from src.models import Category, ImportResult, ImportSession, Transaction  # noqa: E402,F401
 from src.load import ExcelFOSLoader  # noqa: E402
+from src.pipeline import CurrentYearPipeline  # noqa: E402
 from src.transform import CategoryRegistry  # noqa: E402
 from src.validate import ImportValidator, write_validation_report  # noqa: E402
 
@@ -154,7 +155,7 @@ def verify_2025_extraction_validation_and_load(
             output_path,
             source_workbook=workbook_path,
             source_sheet="2025",
-            fos_version="0.2.0-alpha.6",
+            fos_version="0.2.0",
         )
         from openpyxl import load_workbook
 
@@ -181,19 +182,37 @@ def verify_2025_extraction_validation_and_load(
         if load_result.transaction_rows != 378 or load_result.income_rows != 85:
             raise ValueError("FOS loader row counts did not match the verified import.")
 
+    with TemporaryDirectory() as temporary_dir:
+        integrated_output = Path(temporary_dir) / "Integrated_FOS.xlsx"
+        pipeline_result = CurrentYearPipeline(PROJECT_ROOT).run(
+            workbook_path,
+            sheet_name="2025",
+            output_path=integrated_output,
+            fos_version="0.2.0",
+        )
+        if not integrated_output.is_file():
+            raise ValueError("Integrated pipeline did not create the FOS workbook.")
+        if pipeline_result.load_result.transaction_rows != 378:
+            raise ValueError("Integrated pipeline transaction count mismatch.")
+        if not pipeline_result.validation_summary_path.is_file():
+            raise ValueError("Integrated pipeline validation summary is missing.")
+        if not pipeline_result.exceptions_path.is_file():
+            raise ValueError("Integrated pipeline exceptions report is missing.")
+
     print("- 2025 validation and exceptions reports: OK")
     print("- 2025 FOS Excel workbook load: OK")
+    print("- End-to-end update pipeline: OK")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Verify FOS v0.2.0-alpha.5")
+    parser = argparse.ArgumentParser(description="Verify FOS v0.2.0")
     parser.add_argument("--workbook", type=Path, help="Optional private Budget workbook path.")
     args = parser.parse_args()
 
     detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
     registry = CategoryRegistry(PROJECT_ROOT / "config" / "categories.yaml")
 
-    print("FOS v0.2.0-alpha.6 verification")
+    print("FOS v0.2.0 verification")
     print("- Core models: OK")
     print(f"- Configured categories: {registry.category_count()}")
     print(f"- Configured aliases: {registry.alias_count()}")

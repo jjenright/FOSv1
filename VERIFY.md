@@ -1,42 +1,39 @@
-# Verify v0.2.0-alpha.6
+# Verify v0.2.0
 
-From the repository root with the virtual environment activated:
+## Repository verification
 
 ```powershell
 py -m pytest
 py scripts\verify.py
 ```
 
-Expected result: **22 tests pass** and the script ends with
-`Verification PASSED`.
-
-Verify the complete pipeline against the private historical workbook:
+## Private-workbook verification
 
 ```powershell
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-Expected private-workbook checks:
+Expected private-workbook results include:
 
-- 19 annual worksheets;
-- 26 pay periods in 2025;
+- 19 configured annual worksheets;
+- 26 pay periods in the 2025 worksheet;
 - 497 source financial rows;
 - 463 normalized records;
 - 34 unmapped records across 28 labels;
-- source total of `$432,079.48`;
-- reconciliation difference of `0.00`;
-- 378 non-income transaction rows loaded;
-- 85 income rows loaded; and
-- a valid seven-sheet FOS Excel workbook.
+- zero reconciliation difference;
+- a successfully generated FOS workbook; and
+- `Verification PASSED`.
 
-Create the workbook yourself:
+## Run the production update
 
 ```powershell
-py scripts\load_current.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
+py -m src.update "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
 ```
 
-Generated files:
+Expected output files:
 
-- `output\Financial_Operating_System.xlsx`
-- `output\validation_summary.json`
-- `output\exceptions.csv`
+```text
+output\Financial_Operating_System.xlsx
+output\validation_summary.json
+output\exceptions.csv
+```

@@ -1,21 +1,21 @@
 # Family Financial Operating System (FOS)
 
-Current development release: **v0.2.0-alpha.6**
+Current release: **v0.2.0 — Data Engine**
 
-This release loads a validated `2025` current-layout import into a structured
-FOS Excel workbook. It creates:
+This release completes the first end-to-end FOS pipeline for a current-layout
+annual worksheet. One command now:
 
-- an import-status dashboard;
-- the production category dimension;
-- normalized transaction and income fact tables;
-- grouped category exceptions;
-- validation details; and
-- an import audit log with source-workbook traceability.
+1. reads the private budget workbook;
+2. detects the configured worksheet layout;
+3. extracts and normalizes income, transfers, variable expenses, and fixed expenses;
+4. validates row counts, source amounts, category IDs, and source-cell uniqueness;
+5. writes validation and exceptions reports; and
+6. creates the structured FOS Excel workbook.
 
 Unmapped source rows remain visible in the `Exceptions` worksheet and are not
 silently assigned to a category.
 
-## Windows verification
+## Windows setup and verification
 
 From the repository root with the virtual environment activated:
 
@@ -25,17 +25,28 @@ py -m pytest
 py scripts\verify.py
 ```
 
-Verify the complete extract/validate/load pipeline against the private workbook:
+Verify the complete pipeline against the private workbook:
 
 ```powershell
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-Create the private FOS workbook:
+## Run the FOS update
 
 ```powershell
-py scripts\load_current.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
+py -m src.update "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
 ```
 
-The generated workbook and validation reports are written to `output\` and
-must not be committed to GitHub.
+Equivalent convenience command:
+
+```powershell
+py scripts\update_fos.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
+```
+
+The generated workbook and reports are written to `output\` and must not be
+committed to GitHub.
+
+## v0.2.0 boundary
+
+This release supports the configured **current** worksheet layout. Historical
+legacy and transitional extraction is the next release milestone.
