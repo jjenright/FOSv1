@@ -1,4 +1,4 @@
-"""Command-line entry point for the FOS v0.2.0 data engine."""
+"""Command-line entry point for the FOS v0.2.1 data engine."""
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ def main() -> int:
             args.workbook,
             sheet_name=args.sheet,
             output_path=args.output,
-            fos_version="0.2.0",
+            fos_version="0.2.1",
         )
     except (FileNotFoundError, ValueError) as exc:
         print(f"ERROR: {exc}")

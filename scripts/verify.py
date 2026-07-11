@@ -1,4 +1,4 @@
-"""Verify the complete FOS v0.2.0 data engine."""
+"""Verify the complete FOS v0.2.1 data engine."""
 
 from __future__ import annotations
 
@@ -155,7 +155,7 @@ def verify_2025_extraction_validation_and_load(
             output_path,
             source_workbook=workbook_path,
             source_sheet="2025",
-            fos_version="0.2.0",
+            fos_version="0.2.1",
         )
         from openpyxl import load_workbook
 
@@ -188,7 +188,7 @@ def verify_2025_extraction_validation_and_load(
             workbook_path,
             sheet_name="2025",
             output_path=integrated_output,
-            fos_version="0.2.0",
+            fos_version="0.2.1",
         )
         if not integrated_output.is_file():
             raise ValueError("Integrated pipeline did not create the FOS workbook.")
@@ -205,14 +205,14 @@ def verify_2025_extraction_validation_and_load(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Verify FOS v0.2.0")
+    parser = argparse.ArgumentParser(description="Verify FOS v0.2.1")
     parser.add_argument("--workbook", type=Path, help="Optional private Budget workbook path.")
     args = parser.parse_args()
 
     detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
     registry = CategoryRegistry(PROJECT_ROOT / "config" / "categories.yaml")
 
-    print("FOS v0.2.0 verification")
+    print("FOS v0.2.1 verification")
     print("- Core models: OK")
     print(f"- Configured categories: {registry.category_count()}")
     print(f"- Configured aliases: {registry.alias_count()}")

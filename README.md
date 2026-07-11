@@ -1,6 +1,6 @@
 # Family Financial Operating System (FOS)
 
-Current release: **v0.2.0 — Data Engine**
+Current release: **v0.2.1 — Excel table hotfix**
 
 This release completes the first end-to-end FOS pipeline for a current-layout
 annual worksheet. One command now:
@@ -46,7 +46,7 @@ py scripts\update_fos.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
 The generated workbook and reports are written to `output\` and must not be
 committed to GitHub.
 
-## v0.2.0 boundary
+## v0.2.1 boundary
 
 This release supports the configured **current** worksheet layout. Historical
 legacy and transitional extraction is the next release milestone.

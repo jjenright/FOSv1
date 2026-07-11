@@ -1,4 +1,4 @@
-"""Convenience wrapper for the v0.2.0 FOS update command."""
+"""Convenience wrapper for the v0.2.1 FOS update command."""
 
 from __future__ import annotations
 

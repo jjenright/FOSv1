@@ -46,7 +46,7 @@ def main() -> int:
         args.output,
         source_workbook=args.workbook,
         source_sheet=args.sheet,
-        fos_version='0.2.0-alpha.6',
+        fos_version='0.2.1',
     )
     print(f'Created: {result.output_path}')
     print(f'Categories: {result.category_rows}')

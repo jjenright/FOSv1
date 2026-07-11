@@ -193,7 +193,9 @@ class ExcelFOSLoader:
             number += 1
         self._write_table(worksheet, headers, rows, 'FactTransactionsTable')
         worksheet.freeze_panes = 'A2'
-        worksheet.auto_filter.ref = worksheet.dimensions
+        # The Excel table already owns its AutoFilter. Adding a worksheet-level
+        # AutoFilter over the same range creates invalid overlapping filter
+        # definitions that Excel repairs by removing the table.
         worksheet.column_dimensions['G'].width = 15
         worksheet['G2'].number_format = CURRENCY_FORMAT
         for row in range(2, worksheet.max_row + 1):

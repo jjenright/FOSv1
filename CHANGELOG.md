@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+- Fixed an invalid overlapping worksheet AutoFilter on `FactTransactions`.
+- Preserved the table-owned AutoFilter and structured Excel table.
+- Added a regression test to prevent Excel repair warnings.
+
 ## v0.2.0
 
 - Added the integrated `CurrentYearPipeline`.
