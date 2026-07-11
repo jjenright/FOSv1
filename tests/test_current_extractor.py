@@ -47,6 +47,7 @@ def test_extracts_and_separates_current_layout_records() -> None:
 
     assert result.periods == ("Jan 1 - Jan 14",)
     assert len(result.records) == 4
+    assert len(result.source_rows) == 5
     assert len(result.income) == 1
     assert len(result.transfers) == 1
     assert len(result.variable_expenses) == 1

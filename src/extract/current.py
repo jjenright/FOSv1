@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
-from typing import Iterable
 
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -46,6 +45,17 @@ class ExtractedRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class SourceRow:
+    """One non-zero financial row read from the source worksheet."""
+
+    period: str
+    original_name: str
+    amount: Decimal
+    source_sheet: str
+    source_cell: str
+
+
+@dataclass(frozen=True, slots=True)
 class UnknownCategory:
     """A non-zero workbook row that has no production dictionary mapping."""
 
@@ -62,6 +72,7 @@ class CurrentExtractionResult:
 
     records: tuple[ExtractedRecord, ...]
     unknown_categories: tuple[UnknownCategory, ...]
+    source_rows: tuple[SourceRow, ...]
     periods: tuple[str, ...]
 
     def for_section(self, section: str) -> tuple[Transaction, ...]:
@@ -134,6 +145,7 @@ class CurrentLayoutExtractor:
 
         records: list[ExtractedRecord] = []
         unknowns: list[UnknownCategory] = []
+        source_rows: list[SourceRow] = []
         periods = tuple(period for _, period in headers)
 
         for index, (header_row, period) in enumerate(headers):
@@ -142,7 +154,7 @@ class CurrentLayoutExtractor:
                 if index + 1 < len(headers)
                 else worksheet.max_row
             )
-            block_records, block_unknowns = self._extract_block(
+            block_records, block_unknowns, block_source_rows = self._extract_block(
                 worksheet=worksheet,
                 year=year,
                 period=period,
@@ -152,10 +164,12 @@ class CurrentLayoutExtractor:
             )
             records.extend(block_records)
             unknowns.extend(block_unknowns)
+            source_rows.extend(block_source_rows)
 
         return CurrentExtractionResult(
             records=tuple(records),
             unknown_categories=tuple(unknowns),
+            source_rows=tuple(source_rows),
             periods=periods,
         )
 
@@ -168,9 +182,10 @@ class CurrentLayoutExtractor:
         start_row: int,
         end_row: int,
         include_zero: bool,
-    ) -> tuple[list[ExtractedRecord], list[UnknownCategory]]:
+    ) -> tuple[list[ExtractedRecord], list[UnknownCategory], list[SourceRow]]:
         records: list[ExtractedRecord] = []
         unknowns: list[UnknownCategory] = []
+        source_rows: list[SourceRow] = []
 
         for label_column, amount_column in self._COLUMN_PAIRS:
             for row_number in range(start_row, end_row + 1):
@@ -188,12 +203,23 @@ class CurrentLayoutExtractor:
                 if self._is_control_label(label):
                     continue
 
+                cleaned_label = " ".join(label.split())
+                source_rows.append(
+                    SourceRow(
+                        period=period,
+                        original_name=cleaned_label,
+                        amount=amount,
+                        source_sheet=worksheet.title,
+                        source_cell=label_cell.coordinate,
+                    )
+                )
+
                 category = self.category_registry.find(label)
                 if category is None:
                     unknowns.append(
                         UnknownCategory(
                             period=period,
-                            original_name=" ".join(label.split()),
+                            original_name=cleaned_label,
                             amount=amount,
                             source_sheet=worksheet.title,
                             source_cell=label_cell.coordinate,
@@ -219,7 +245,7 @@ class CurrentLayoutExtractor:
                 )
                 records.append(ExtractedRecord(section=section, transaction=transaction))
 
-        return records, unknowns
+        return records, unknowns, source_rows
 
     @staticmethod
     def _period_headers(worksheet: Worksheet) -> list[tuple[int, str]]:

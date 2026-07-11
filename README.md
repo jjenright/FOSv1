@@ -1,19 +1,19 @@
 # Family Financial Operating System (FOS)
 
-Current development release: **v0.2.0-alpha.4**
+Current development release: **v0.2.0-alpha.5**
 
-This release adds the first production workbook extractor. It reads the `2025`
-current-layout worksheet, detects all 26 pay-period blocks, maps known rows through
-the production category dictionary, and separates the normalized records into:
+This release validates the normalized `2025` current-layout import before it can
+be loaded into the FOS. It adds:
 
-- income;
-- transfers and debt payments;
-- variable and irregular expenses; and
-- fixed expenses.
+- source-row and dollar reconciliation;
+- duplicate pay-period and source-cell checks;
+- category-ID integrity checks;
+- grouped exceptions for unmapped workbook labels;
+- JSON validation summaries and CSV exceptions reports; and
+- automated tests against synthetic data and the private workbook baseline.
 
-Every record retains its source worksheet and cell. Non-zero rows that are not in
-the category dictionary are returned as explicit unknown-category records instead
-of being silently assigned.
+The validator treats unmapped categories as warnings, not silent guesses. An
+import is valid when it has no structural or reconciliation errors.
 
 ## Windows verification
 
@@ -31,4 +31,11 @@ Optional verification against the private workbook:
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-The private workbook must not be committed to GitHub.
+To write the detailed validation files for the `2025` worksheet:
+
+```powershell
+py scripts\validate_current.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
+```
+
+This writes `output\validation_summary.json` and `output\exceptions.csv`. The
+private workbook and generated outputs must not be committed to GitHub.

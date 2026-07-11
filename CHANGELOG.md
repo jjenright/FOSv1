@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.0-alpha.5
+
+- Added source-row and amount reconciliation for current-layout imports.
+- Added duplicate period, duplicate source-cell, and category-ID integrity checks.
+- Added grouped unmapped-category exceptions with counts, totals, and source references.
+- Added JSON validation summaries and CSV exceptions reports.
+- Added a command-line validation script and automated validator tests.
+- Verified the 2025 import reconciles 497 source rows and $432,079.48 with zero difference.
+
 ## v0.2.0-alpha.4
 
 - Added the production current-layout extractor for the 2025 annual worksheet.

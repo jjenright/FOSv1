@@ -1,4 +1,4 @@
-# Verify v0.2.0-alpha.4
+# Verify v0.2.0-alpha.5
 
 From the repository root with the virtual environment activated:
 
@@ -7,14 +7,32 @@ py -m pytest
 py scripts\verify.py
 ```
 
-Expected result: 16 tests pass and the script ends with `Verification PASSED`.
+Expected result: **20 tests pass** and the script ends with
+`Verification PASSED`.
 
-To test the extractor against the private historical workbook:
+To validate against the private historical workbook:
 
 ```powershell
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-The workbook check validates the 19 annual worksheets and confirms that the 2025
-extractor finds 26 pay periods, 463 normalized records, and 34 unmapped one-off
-records while reconciling the section totals used by this release.
+Expected private-workbook checks:
+
+- 19 annual worksheets;
+- 26 pay periods in 2025;
+- 497 source financial rows;
+- 463 normalized records;
+- 34 unmapped records across 28 labels;
+- source total of `$432,079.48`; and
+- reconciliation difference of `0.00`.
+
+To create detailed reports:
+
+```powershell
+py scripts\validate_current.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
+```
+
+The command writes:
+
+- `output\validation_summary.json`
+- `output\exceptions.csv`

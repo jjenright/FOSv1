@@ -8,6 +8,7 @@ from .current import (
     CurrentExtractionResult,
     CurrentLayoutExtractor,
     ExtractedRecord,
+    SourceRow,
     UnknownCategory,
 )
 from .layout_detector import LayoutDetector
@@ -21,5 +22,6 @@ __all__ = [
     "SECTION_INCOME",
     "SECTION_TRANSFERS",
     "SECTION_VARIABLE_EXPENSES",
+    "SourceRow",
     "UnknownCategory",
 ]
