@@ -1,19 +1,19 @@
 # Family Financial Operating System (FOS)
 
-Current development release: **v0.2.0-alpha.5**
+Current development release: **v0.2.0-alpha.6**
 
-This release validates the normalized `2025` current-layout import before it can
-be loaded into the FOS. It adds:
+This release loads a validated `2025` current-layout import into a structured
+FOS Excel workbook. It creates:
 
-- source-row and dollar reconciliation;
-- duplicate pay-period and source-cell checks;
-- category-ID integrity checks;
-- grouped exceptions for unmapped workbook labels;
-- JSON validation summaries and CSV exceptions reports; and
-- automated tests against synthetic data and the private workbook baseline.
+- an import-status dashboard;
+- the production category dimension;
+- normalized transaction and income fact tables;
+- grouped category exceptions;
+- validation details; and
+- an import audit log with source-workbook traceability.
 
-The validator treats unmapped categories as warnings, not silent guesses. An
-import is valid when it has no structural or reconciliation errors.
+Unmapped source rows remain visible in the `Exceptions` worksheet and are not
+silently assigned to a category.
 
 ## Windows verification
 
@@ -25,17 +25,17 @@ py -m pytest
 py scripts\verify.py
 ```
 
-Optional verification against the private workbook:
+Verify the complete extract/validate/load pipeline against the private workbook:
 
 ```powershell
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-To write the detailed validation files for the `2025` worksheet:
+Create the private FOS workbook:
 
 ```powershell
-py scripts\validate_current.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
+py scripts\load_current.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
 ```
 
-This writes `output\validation_summary.json` and `output\exceptions.csv`. The
-private workbook and generated outputs must not be committed to GitHub.
+The generated workbook and validation reports are written to `output\` and
+must not be committed to GitHub.

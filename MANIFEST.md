@@ -2,16 +2,14 @@
 
 ## Added
 
-- `src/validate/import_validator.py`
-- `scripts/validate_current.py`
-- `tests/test_import_validator.py`
+- `src/load/excel_loader.py`
+- `scripts/load_current.py`
+- `tests/test_excel_loader.py`
 
 ## Updated
 
-- `src/extract/current.py`
-- `src/extract/__init__.py`
-- `src/validate/__init__.py`
-- `tests/test_current_extractor.py`
+- `src/load/__init__.py`
+- `src/transform/category_registry.py`
 - `scripts/verify.py`
 - `README.md`
 - `INSTALL.md`

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.0-alpha.6
+
+- Added the Excel FOS loader for validated current-layout imports.
+- Added Dashboard, Import_Log, DimCategory, FactTransactions, FactIncome, Exceptions, and Validation worksheets.
+- Added Excel tables, financial number formatting, source-cell traceability, and a first import summary chart.
+- Added a command-line load utility and automated loader tests.
+- Verified the private 2025 load produces 378 transaction rows, 85 income rows, and 28 grouped exceptions.
+
 ## v0.2.0-alpha.5
 
 - Added source-row and amount reconciliation for current-layout imports.

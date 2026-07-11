@@ -17,6 +17,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.extract import CurrentLayoutExtractor, LayoutDetector  # noqa: E402
 from src.models import Category, ImportResult, ImportSession, Transaction  # noqa: E402,F401
+from src.load import ExcelFOSLoader  # noqa: E402
 from src.transform import CategoryRegistry  # noqa: E402
 from src.validate import ImportValidator, write_validation_report  # noqa: E402
 
@@ -72,7 +73,7 @@ def verify_required_workbook_aliases(workbook_path: Path, registry: CategoryRegi
             )
 
 
-def verify_2025_extraction_and_validation(
+def verify_2025_extraction_validation_and_load(
     workbook_path: Path, registry: CategoryRegistry
 ) -> None:
     extractor = CurrentLayoutExtractor(registry)
@@ -145,7 +146,43 @@ def verify_2025_extraction_and_validation(
     print(f"- 2025 unmapped labels: {actual['unknown_labels']}")
     print(f"- 2025 source total: ${actual['source_total']:,.2f}")
     print(f"- 2025 reconciliation difference: {report.metrics['reconciliation_difference']}")
+    with TemporaryDirectory() as temporary_dir:
+        output_path = Path(temporary_dir) / "Financial_Operating_System.xlsx"
+        load_result = ExcelFOSLoader(registry).load_current(
+            result,
+            report,
+            output_path,
+            source_workbook=workbook_path,
+            source_sheet="2025",
+            fos_version="0.2.0-alpha.6",
+        )
+        from openpyxl import load_workbook
+
+        output_workbook = load_workbook(output_path, data_only=False, read_only=False)
+        try:
+            expected_sheets = list(ExcelFOSLoader.REQUIRED_SHEETS)
+            if output_workbook.sheetnames != expected_sheets:
+                raise ValueError(
+                    f"FOS workbook sheets mismatch: {output_workbook.sheetnames}"
+                )
+            if output_workbook["FactTransactions"].max_row != 379:
+                raise ValueError("Expected 378 transaction rows plus header.")
+            if output_workbook["FactIncome"].max_row != 86:
+                raise ValueError("Expected 85 income rows plus header.")
+            if output_workbook["Exceptions"].max_row != 29:
+                raise ValueError("Expected 28 exception rows plus header.")
+            if output_workbook["Import_Log"]["E2"].value != "PASS":
+                raise ValueError("Import log did not record PASS status.")
+            if output_workbook["Dashboard"]["B9"].value != "=SUM(FactIncome!F:F)":
+                raise ValueError("Dashboard income formula is missing.")
+        finally:
+            output_workbook.close()
+
+        if load_result.transaction_rows != 378 or load_result.income_rows != 85:
+            raise ValueError("FOS loader row counts did not match the verified import.")
+
     print("- 2025 validation and exceptions reports: OK")
+    print("- 2025 FOS Excel workbook load: OK")
 
 
 def main() -> int:
@@ -156,7 +193,7 @@ def main() -> int:
     detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
     registry = CategoryRegistry(PROJECT_ROOT / "config" / "categories.yaml")
 
-    print("FOS v0.2.0-alpha.5 verification")
+    print("FOS v0.2.0-alpha.6 verification")
     print("- Core models: OK")
     print(f"- Configured categories: {registry.category_count()}")
     print(f"- Configured aliases: {registry.alias_count()}")
@@ -184,7 +221,7 @@ def main() -> int:
         print("- Workbook/layout configuration match: OK")
         verify_required_workbook_aliases(args.workbook, registry)
         print("- Workbook/category dictionary checks: OK")
-        verify_2025_extraction_and_validation(args.workbook, registry)
+        verify_2025_extraction_validation_and_load(args.workbook, registry)
 
     print("Verification PASSED")
     return 0

@@ -1,4 +1,4 @@
-# Install v0.2.0-alpha.5 on Windows
+# Install v0.2.0-alpha.6 on Windows
 
 1. Extract this package.
 2. Copy all files and folders into the root of your cloned `FOSv1` repository.
@@ -12,7 +12,7 @@
 py -m pip install -r requirements.txt
 ```
 
-If the virtual environment does not exist yet, create it first:
+If the virtual environment does not exist:
 
 ```powershell
 py -m venv .venv
@@ -21,12 +21,12 @@ py -m pip install --upgrade pip
 py -m pip install -r requirements.txt
 ```
 
-If PowerShell blocks activation, run this once in the same terminal, then
-activate again:
+Run the automated tests and package verification:
 
 ```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+py -m pytest
+py scripts\verify.py
 ```
 
-Do not commit the personal budget workbook. Keep it outside the repository or in
-the ignored `workbook/` folder. Generated reports in `output/` are also ignored.
+Keep the personal budget workbook outside the repository or in the ignored
+`workbook/` folder. Generated workbooks and reports in `output/` are ignored.

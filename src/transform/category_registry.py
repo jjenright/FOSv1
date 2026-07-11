@@ -106,3 +106,8 @@ class CategoryRegistry:
 
     def category_ids(self) -> tuple[str, ...]:
         return tuple(self._categories_by_id)
+
+    def entries(self) -> tuple[dict[str, Any], ...]:
+        """Return configured category entries in source order."""
+
+        return tuple(dict(entry) for entry in self._categories_by_id.values())

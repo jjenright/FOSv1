@@ -1,4 +1,4 @@
-# Verify v0.2.0-alpha.5
+# Verify v0.2.0-alpha.6
 
 From the repository root with the virtual environment activated:
 
@@ -7,10 +7,10 @@ py -m pytest
 py scripts\verify.py
 ```
 
-Expected result: **20 tests pass** and the script ends with
+Expected result: **22 tests pass** and the script ends with
 `Verification PASSED`.
 
-To validate against the private historical workbook:
+Verify the complete pipeline against the private historical workbook:
 
 ```powershell
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
@@ -23,16 +23,20 @@ Expected private-workbook checks:
 - 497 source financial rows;
 - 463 normalized records;
 - 34 unmapped records across 28 labels;
-- source total of `$432,079.48`; and
-- reconciliation difference of `0.00`.
+- source total of `$432,079.48`;
+- reconciliation difference of `0.00`;
+- 378 non-income transaction rows loaded;
+- 85 income rows loaded; and
+- a valid seven-sheet FOS Excel workbook.
 
-To create detailed reports:
+Create the workbook yourself:
 
 ```powershell
-py scripts\validate_current.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
+py scripts\load_current.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
 ```
 
-The command writes:
+Generated files:
 
+- `output\Financial_Operating_System.xlsx`
 - `output\validation_summary.json`
 - `output\exceptions.csv`

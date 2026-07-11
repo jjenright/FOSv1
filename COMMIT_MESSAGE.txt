@@ -1,1 +1,1 @@
-feat(validate): add import validation and exceptions reporting
+feat(load): add Excel FOS workbook loader
