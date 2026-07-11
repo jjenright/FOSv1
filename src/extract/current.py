@@ -31,8 +31,14 @@ _CONTROL_LABELS = {
     "prev balance",
     "previous balance",
     "total balance+pay",
+    "bi-weekly total",
+    "monthlies total",
     "chequing ending balance",
     "next period's ending balance",
+    "visa opening balance",
+    "visa closing balance",
+    "mastercard opening balance",
+    "mastercard closing balance",
 }
 
 
@@ -250,6 +256,7 @@ class CurrentLayoutExtractor:
     @staticmethod
     def _period_headers(worksheet: Worksheet) -> list[tuple[int, str]]:
         headers: list[tuple[int, str]] = []
+        counts: dict[str, int] = {}
         for row_number in range(1, worksheet.max_row + 1):
             period = worksheet[f"A{row_number}"].value
             if (
@@ -258,7 +265,14 @@ class CurrentLayoutExtractor:
                 and worksheet[f"C{row_number}"].value == "Bi-weekly"
                 and worksheet[f"E{row_number}"].value == "Monthlies"
             ):
-                headers.append((row_number, " ".join(period.split())))
+                cleaned = " ".join(period.split())
+                counts[cleaned] = counts.get(cleaned, 0) + 1
+                unique = (
+                    cleaned
+                    if counts[cleaned] == 1
+                    else f"{cleaned} [{counts[cleaned]}]"
+                )
+                headers.append((row_number, unique))
         return headers
 
     @staticmethod

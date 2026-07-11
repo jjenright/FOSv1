@@ -1,19 +1,12 @@
 # Family Financial Operating System (FOS)
 
-Current release: **v0.2.1 — Excel table hotfix**
+Current release: **v0.3.0 — Historical Import**
 
-This release completes the first end-to-end FOS pipeline for a current-layout
-annual worksheet. One command now:
-
-1. reads the private budget workbook;
-2. detects the configured worksheet layout;
-3. extracts and normalizes income, transfers, variable expenses, and fixed expenses;
-4. validates row counts, source amounts, category IDs, and source-cell uniqueness;
-5. writes validation and exceptions reports; and
-6. creates the structured FOS Excel workbook.
-
-Unmapped source rows remain visible in the `Exceptions` worksheet and are not
-silently assigned to a category.
+This release imports the official annual budget history into one normalized FOS
+workbook. It supports the legacy and current worksheet patterns found in the
+source workbook, validates every annual sheet, preserves source-cell
+traceability, and excludes the archived `2017 (old)` sheet to prevent duplicate
+2017 data.
 
 ## Windows setup and verification
 
@@ -25,28 +18,34 @@ py -m pytest
 py scripts\verify.py
 ```
 
-Verify the complete pipeline against the private workbook:
+Verify against the private budget workbook:
 
 ```powershell
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-## Run the FOS update
+## Generate the full historical FOS workbook
+
+```powershell
+py -m src.update "C:\path\to\Budget-Jason-original.xlsx"
+```
+
+The command writes these private outputs under `output\`:
+
+- `Financial_Operating_System.xlsx`
+- `historical_validation_summary.json`
+- `historical_exceptions.csv`
+
+To retain the previous one-sheet workflow, provide `--sheet`, for example:
 
 ```powershell
 py -m src.update "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
 ```
 
-Equivalent convenience command:
+Source workbooks and generated outputs must not be committed to GitHub.
 
-```powershell
-py scripts\update_fos.py "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
-```
+## v0.3.0 boundary
 
-The generated workbook and reports are written to `output\` and must not be
-committed to GitHub.
-
-## v0.2.1 boundary
-
-This release supports the configured **current** worksheet layout. Historical
-legacy and transitional extraction is the next release milestone.
+This release completes the historical data import. Unmapped one-off labels are
+preserved in the Exceptions outputs for later review; they are never silently
+guessed. KPI calculations and financial insights are the next release milestone.

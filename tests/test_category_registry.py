@@ -10,7 +10,7 @@ CONFIG = Path(__file__).resolve().parents[1] / "config" / "categories.yaml"
 
 def test_dictionary_loads_and_has_expected_size() -> None:
     registry = CategoryRegistry(CONFIG)
-    assert registry.version == "0.2.0-alpha.3"
+    assert registry.version == "0.3.0"
     assert registry.category_count() >= 50
     assert registry.alias_count() >= 150
 

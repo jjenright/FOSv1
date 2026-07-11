@@ -1,11 +1,25 @@
-# v0.2.1 Manifest
+# v0.3.0 Manifest
+
+## Added
+
+- `src/extract/legacy.py` — legacy pay-period worksheet extraction.
+- `src/extract/historical.py` — workbook-wide extraction and archive exclusion.
+- `src/validate/historical_validator.py` — aggregate and per-sheet validation.
+- `src/load/historical_excel_loader.py` — full-history Excel FOS output.
+- `src/historical_pipeline.py` — end-to-end historical pipeline.
+- Historical extractor and pipeline tests.
 
 ## Modified
 
-- `src/load/excel_loader.py` — removes overlapping worksheet AutoFilter.
-- `tests/test_excel_loader.py` — regression coverage for table/filter validity.
-- Runtime version and release documentation files.
+- `src/extract/current.py` — skips balance/total control rows and handles duplicate period labels.
+- `config/categories.yaml` — maps legacy `Visa` payment labels.
+- `src/update.py` — imports the full history by default; `--sheet` remains available.
+- `scripts/verify.py` — verifies the full workbook import and output tables.
+- Release documentation and version files.
 
-## Behaviour
+## Historical import rules
 
-The `FactTransactions` Excel table retains its own AutoFilter; no second worksheet-level AutoFilter is written.
+- Imports 2008–2014, 2016, 2017, and 2018–2026.
+- Excludes `2017 (old)` to prevent double counting.
+- Preserves unknown labels in Exceptions instead of guessing.
+- Reconciles every extracted source row to either a normalized record or an exception.

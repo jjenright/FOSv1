@@ -1,19 +1,19 @@
-# Install v0.2.1
+# Install v0.3.0
 
 1. Extract this package.
-2. Copy its contents into the local `FOSv1` repository and replace existing files.
-3. Activate the virtual environment.
-4. Install dependencies and run the tests.
+2. Copy all extracted contents into the local `FOSv1` repository and replace existing files.
+3. Open a terminal in the repository root.
+4. Activate the virtual environment and run the checks.
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 py -m pip install -r requirements.txt
 py -m pytest
-py scripts\verify.py
+py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-Regenerate the private workbook after installing the hotfix:
+Generate the historical FOS workbook:
 
 ```powershell
-py -m src.update "C:\path\to\Budget-Jason-original.xlsx" --sheet 2025
+py -m src.update "C:\path\to\Budget-Jason-original.xlsx"
 ```

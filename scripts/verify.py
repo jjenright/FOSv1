@@ -1,4 +1,4 @@
-"""Verify the complete FOS v0.2.1 data engine."""
+"""Verify the complete FOS v0.3.0 data engine."""
 
 from __future__ import annotations
 
@@ -19,6 +19,9 @@ from src.extract import CurrentLayoutExtractor, LayoutDetector  # noqa: E402
 from src.models import Category, ImportResult, ImportSession, Transaction  # noqa: E402,F401
 from src.load import ExcelFOSLoader  # noqa: E402
 from src.pipeline import CurrentYearPipeline  # noqa: E402
+from src.historical_pipeline import HistoricalPipeline  # noqa: E402
+from src.extract import HistoricalWorkbookExtractor  # noqa: E402
+from src.validate import HistoricalImportValidator  # noqa: E402
 from src.transform import CategoryRegistry  # noqa: E402
 from src.validate import ImportValidator, write_validation_report  # noqa: E402
 
@@ -155,7 +158,7 @@ def verify_2025_extraction_validation_and_load(
             output_path,
             source_workbook=workbook_path,
             source_sheet="2025",
-            fos_version="0.2.1",
+            fos_version="0.3.0",
         )
         from openpyxl import load_workbook
 
@@ -188,7 +191,7 @@ def verify_2025_extraction_validation_and_load(
             workbook_path,
             sheet_name="2025",
             output_path=integrated_output,
-            fos_version="0.2.1",
+            fos_version="0.3.0",
         )
         if not integrated_output.is_file():
             raise ValueError("Integrated pipeline did not create the FOS workbook.")
@@ -204,15 +207,129 @@ def verify_2025_extraction_validation_and_load(
     print("- End-to-end update pipeline: OK")
 
 
+
+def verify_historical_import(workbook_path: Path, registry: CategoryRegistry) -> None:
+    detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
+    extraction = HistoricalWorkbookExtractor(detector, registry).extract(workbook_path)
+    validation = HistoricalImportValidator(ImportValidator(registry)).validate(extraction)
+
+    expected = {
+        "sheets": 18,
+        "excluded": 1,
+        "periods": 412,
+        "source_rows": 6430,
+        "records": 5655,
+        "unknowns": 775,
+        "unknown_labels": 603,
+        "income_count": 911,
+        "transaction_count": 4744,
+        "income_total": Decimal("2247082.59260000000275"),
+        "transfer_total": Decimal("1604663.809"),
+        "variable_total": Decimal("213060.070000000000014"),
+        "fixed_total": Decimal("463401.31"),
+        "unknown_total": Decimal("223723.82"),
+        "source_total": Decimal("4751931.601600000002764"),
+    }
+    actual = {
+        "sheets": len(extraction.sheets),
+        "excluded": len(extraction.excluded_sheets),
+        "periods": sum(len(sheet.result.periods) for sheet in extraction.sheets),
+        "source_rows": len(extraction.source_rows),
+        "records": len(extraction.records),
+        "unknowns": len(extraction.unknown_categories),
+        "unknown_labels": len(validation.exceptions),
+        "income_count": len(extraction.income),
+        "transaction_count": (
+            len(extraction.transfers)
+            + len(extraction.variable_expenses)
+            + len(extraction.fixed_expenses)
+        ),
+        "income_total": sum((item.amount for item in extraction.income), Decimal("0")),
+        "transfer_total": sum((item.amount for item in extraction.transfers), Decimal("0")),
+        "variable_total": sum(
+            (item.amount for item in extraction.variable_expenses), Decimal("0")
+        ),
+        "fixed_total": sum(
+            (item.amount for item in extraction.fixed_expenses), Decimal("0")
+        ),
+        "unknown_total": sum(
+            (item.amount for item in extraction.unknown_categories), Decimal("0")
+        ),
+        "source_total": sum(
+            (item.amount for item in extraction.source_rows), Decimal("0")
+        ),
+    }
+    if actual != expected:
+        differences = [
+            f"{key}: expected {expected[key]}, found {actual[key]}"
+            for key in expected
+            if actual[key] != expected[key]
+        ]
+        raise ValueError("Historical extraction mismatch: " + "; ".join(differences))
+    if not validation.is_valid:
+        raise ValueError(
+            "Historical validation failed: "
+            + "; ".join(issue.message for issue in validation.errors)
+        )
+    if Decimal(str(validation.metrics["reconciliation_difference"])) != 0:
+        raise ValueError("Historical source reconciliation did not equal zero.")
+    if "2017 (old)" not in extraction.excluded_sheets:
+        raise ValueError("Archived 2017 (old) sheet was not excluded.")
+
+    with TemporaryDirectory() as temporary_dir:
+        output = Path(temporary_dir) / "Historical_FOS.xlsx"
+        pipeline = HistoricalPipeline(PROJECT_ROOT).run(
+            workbook_path,
+            output_path=output,
+            fos_version="0.3.0",
+        )
+        if not output.is_file():
+            raise ValueError("Historical pipeline did not create the FOS workbook.")
+        from openpyxl import load_workbook
+
+        workbook = load_workbook(output, data_only=False, read_only=False)
+        try:
+            if workbook["DimYear"].max_row != 19:
+                raise ValueError("Expected 18 historical year rows plus header.")
+            if workbook["FactTransactions"].max_row != 4745:
+                raise ValueError("Historical transaction row count mismatch.")
+            if workbook["FactIncome"].max_row != 912:
+                raise ValueError("Historical income row count mismatch.")
+            if workbook["Exceptions"].max_row != 604:
+                raise ValueError("Historical exception row count mismatch.")
+            if workbook["FactTransactions"].auto_filter.ref is not None:
+                raise ValueError("FactTransactions contains an overlapping AutoFilter.")
+            if "FactTransactionsTable" not in workbook["FactTransactions"].tables:
+                raise ValueError("FactTransactionsTable is missing.")
+            if workbook["Dashboard"]["B16"].value != "=COUNTA(DimYear!A:A)-1":
+                raise ValueError("Historical dashboard year formula is missing.")
+        finally:
+            workbook.close()
+        if pipeline.load_result.transaction_rows != 4744:
+            raise ValueError("Historical pipeline transaction count mismatch.")
+        if not pipeline.validation_summary_path.is_file():
+            raise ValueError("Historical validation summary is missing.")
+        if not pipeline.exceptions_path.is_file():
+            raise ValueError("Historical exceptions report is missing.")
+
+    print(f"- Historical worksheets imported: {actual['sheets']}")
+    print(f"- Historical pay periods extracted: {actual['periods']}")
+    print(f"- Historical normalized records: {actual['records']}")
+    print(f"- Historical unmapped records: {actual['unknowns']}")
+    print(f"- Historical source total: ${actual['source_total']:,.2f}")
+    print("- Archived 2017 (old) exclusion: OK")
+    print("- Historical reconciliation difference: 0")
+    print("- Historical FOS workbook load: OK")
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Verify FOS v0.2.1")
+    parser = argparse.ArgumentParser(description="Verify FOS v0.3.0")
     parser.add_argument("--workbook", type=Path, help="Optional private Budget workbook path.")
     args = parser.parse_args()
 
     detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
     registry = CategoryRegistry(PROJECT_ROOT / "config" / "categories.yaml")
 
-    print("FOS v0.2.1 verification")
+    print("FOS v0.3.0 verification")
     print("- Core models: OK")
     print(f"- Configured categories: {registry.category_count()}")
     print(f"- Configured aliases: {registry.alias_count()}")
@@ -241,6 +358,7 @@ def main() -> int:
         verify_required_workbook_aliases(args.workbook, registry)
         print("- Workbook/category dictionary checks: OK")
         verify_2025_extraction_validation_and_load(args.workbook, registry)
+        verify_historical_import(args.workbook, registry)
 
     print("Verification PASSED")
     return 0

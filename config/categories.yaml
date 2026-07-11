@@ -1,4 +1,4 @@
-version: 0.2.0-alpha.3
+version: 0.3.0
 normalization:
   case_insensitive: true
   collapse_whitespace: true
@@ -118,6 +118,7 @@ categories:
   aliases:
   - Visa payment
   - Visa Payment
+  - Visa
   - Mastercard payment
   - Credit Card
   - Credit card

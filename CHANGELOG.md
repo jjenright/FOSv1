@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.0
+
+- Added legacy and workbook-wide historical extractors.
+- Imported 18 official annual worksheets covering 2008–2026.
+- Excluded the archived `2017 (old)` sheet to prevent duplicate data.
+- Added per-year and aggregate validation with zero reconciliation difference.
+- Added `DimYear`, multi-year import logs, and full-history Excel output.
+- Added historical exceptions JSON/CSV reporting and end-to-end tests.
+
 ## v0.2.1
 
 - Fixed an invalid overlapping worksheet AutoFilter on `FactTransactions`.
