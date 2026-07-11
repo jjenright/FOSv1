@@ -113,6 +113,7 @@ def test_executive_dashboard_contains_cards_charts_and_hidden_helper_data(tmp_pa
         assert dashboard["A14"].value == "True Income"
         assert dashboard["M14"].value == "Financial Flexibility"
         assert len(dashboard._charts) == 4
+        assert all(chart.visible_cells_only is False for chart in dashboard._charts)
         assert dashboard.column_dimensions["P"].hidden is True
         assert dashboard.column_dimensions["AB"].hidden is True
         assert dashboard.auto_filter.ref is None

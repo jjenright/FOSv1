@@ -1,4 +1,4 @@
-# v1.0.0 Manifest
+# v1.0.1 Manifest
 
 ## Production engine
 
@@ -21,7 +21,7 @@
 - `docs/architecture.md`
 - `docs/privacy_and_backup.md`
 - `docs/maintenance.md`
-- `docs/release_notes_v1.0.0.md`
+- `docs/release_notes_v1.0.1.md`
 - KPI, dashboard, insight, data dictionary and financial DNA guides
 
 ## Private generated outputs

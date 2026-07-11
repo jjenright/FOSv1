@@ -1,4 +1,4 @@
-# Install FOS v1.0.0
+# Install FOS v1.0.1
 
 ## First-time setup
 

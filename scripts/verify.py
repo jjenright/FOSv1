@@ -251,6 +251,8 @@ def verify_generated_workbook(
             raise ValueError("Executive dashboard takeaways are missing.")
         if len(dashboard._charts) != 4:
             raise ValueError("Executive dashboard must contain four charts.")
+        if any(chart.visible_cells_only is not False for chart in dashboard._charts):
+            raise ValueError("Dashboard charts must include data stored in hidden helper columns.")
         if not dashboard.column_dimensions["P"].hidden or not dashboard.column_dimensions["AB"].hidden:
             raise ValueError("Executive dashboard helper columns must remain hidden.")
         if dashboard.auto_filter.ref is not None:

@@ -7,7 +7,7 @@ Excel dashboard, and generates a deterministic action plan.
 
 ## Production release
 
-**v1.0.0 — Family Financial Operating System**
+**v1.0.1 — Family Financial Operating System**
 
 The generated workbook includes:
 

@@ -865,6 +865,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
 
         # Charts.
         cash_chart = LineChart()
+        cash_chart.visible_cells_only = False
         cash_chart.title = "Annual Cash Flow Trend"
         cash_chart.y_axis.title = "Amount ($)"
         cash_chart.x_axis.title = "Year"
@@ -889,6 +890,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         worksheet.add_chart(cash_chart, "A23")
 
         ratio_chart = LineChart()
+        ratio_chart.visible_cells_only = False
         ratio_chart.title = "Key Ratio Trend"
         ratio_chart.y_axis.title = "Percent of Income"
         ratio_chart.x_axis.title = "Year"
@@ -914,6 +916,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         worksheet.add_chart(ratio_chart, "I23")
 
         balance_chart = BarChart()
+        balance_chart.visible_cells_only = False
         balance_chart.type = "col"
         balance_chart.title = "Current Balance Sheet"
         balance_chart.y_axis.title = "Amount ($)"
@@ -931,6 +934,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         worksheet.add_chart(balance_chart, "A40")
 
         mix_chart = DoughnutChart()
+        mix_chart.visible_cells_only = False
         mix_chart.title = f"{year_label} Known Spending Mix"
         mix_chart.style = 10
         mix_chart.height = 8.5

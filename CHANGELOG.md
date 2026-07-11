@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.1
+
+- Fixed empty Dashboard charts in Microsoft Excel by allowing charts to plot data from hidden helper columns.
+- Added automated regression checks for dashboard chart visibility settings.
+
 ## v1.0.0
 
 - Completed the production Family Financial Operating System release.

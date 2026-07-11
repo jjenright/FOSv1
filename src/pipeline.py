@@ -35,7 +35,7 @@ class CurrentYearPipeline:
         *,
         sheet_name: str = "2025",
         output_path: str | Path | None = None,
-        fos_version: str = "1.0.0",
+        fos_version: str = "1.0.1",
     ) -> PipelineResult:
         """Run the complete current-layout import pipeline."""
 
