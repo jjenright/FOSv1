@@ -1,17 +1,19 @@
 # Family Financial Operating System (FOS)
 
-Current development release: **v0.2.0-alpha.3**
+Current development release: **v0.2.0-alpha.4**
 
-This release contains the first production category dictionary generated from the
-historical household budget workbook. It preserves the approved merchant mappings:
+This release adds the first production workbook extractor. It reads the `2025`
+current-layout worksheet, detects all 26 pay-period blocks, maps known rows through
+the production category dictionary, and separates the normalized records into:
 
-- Costco → Groceries
-- Canadian Tire → Household Supplies
-- Walmart → Household Supplies
-- Amazon → Household Supplies
+- income;
+- transfers and debt payments;
+- variable and irregular expenses; and
+- fixed expenses.
 
-It also adds a category registry that normalizes recurring due-date labels such as
-`Mortgage (21st)` and reports unknown categories rather than silently guessing.
+Every record retains its source worksheet and cell. Non-zero rows that are not in
+the category dictionary are returned as explicit unknown-category records instead
+of being silently assigned.
 
 ## Windows verification
 

@@ -2,13 +2,12 @@
 
 ## Added
 
-- `src/transform/category_registry.py`
-- `tests/test_category_registry.py`
+- `src/extract/current.py`
+- `tests/test_current_extractor.py`
 
 ## Updated
 
-- `config/categories.yaml`
-- `src/transform/__init__.py`
+- `src/extract/__init__.py`
 - `scripts/verify.py`
 - `README.md`
 - `INSTALL.md`

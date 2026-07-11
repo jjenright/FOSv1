@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.0-alpha.4
+
+- Added the production current-layout extractor for the 2025 annual worksheet.
+- Detects all pay-period blocks using the worksheet header structure.
+- Separates income, transfers, variable/irregular expenses, and fixed expenses.
+- Preserves source worksheet and cell traceability on every normalized record.
+- Reports unknown non-zero categories explicitly rather than guessing.
+- Added automated extractor tests and private-workbook reconciliation checks.
+
 ## v0.2.0-alpha.3
 
 - Added the production `categories.yaml` dictionary based on the historical workbook.
