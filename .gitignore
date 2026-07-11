@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.env
+.vscode/
+
+# Keep private financial data and generated outputs out of GitHub.
+private_data/
+workbook/
+output/*
+!output/.gitkeep
+sample_data/*
+!sample_data/.gitkeep
