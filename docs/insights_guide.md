@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The v0.6.0 insight layer converts validated FOS records into a small number of
+The v1.0.0 insight layer converts validated FOS records into a small number of
 repeatable observations and measurable actions. It does not use generative AI,
 and the same inputs always produce the same outputs.
 

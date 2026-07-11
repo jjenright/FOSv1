@@ -666,7 +666,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         )
 
     def _write_insight_definitions(self, worksheet: Any) -> None:
-        headers = ["Rule", "FOS v0.6.0 definition", "Use", "Limitation"]
+        headers = ["Rule", "FOS v1.0.0 definition", "Use", "Limitation"]
         rows = [
             [
                 "Benchmark window",
@@ -734,7 +734,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         current_snapshot: CurrentSnapshot | None,
         insight_report: InsightReport | None,
     ) -> None:
-        """Create the v0.6.0 executive dashboard.
+        """Create the v1.0.0 executive dashboard.
 
         The dashboard intentionally displays calculated values rather than adding
         another calculation layer. Hidden helper columns provide compact,

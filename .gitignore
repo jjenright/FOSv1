@@ -12,3 +12,12 @@ output/*
 !output/.gitkeep
 sample_data/*
 !sample_data/.gitkeep
+
+# Prevent accidental staging of source or generated financial files anywhere.
+*.xlsx
+*.xlsm
+*.xls
+historical_validation_summary*.json
+validation_summary*.json
+historical_exceptions*.csv
+exceptions*.csv

@@ -1,17 +1,20 @@
 # Changelog
 
+## v1.0.0
+
+- Completed the production Family Financial Operating System release.
+- Centralized release version handling in the root `VERSION` file.
+- Replaced hardcoded private-workbook totals, years and row counts with dynamic
+  reconciliation and structural verification.
+- Added generated-XLSX archive, table and AutoFilter integrity checks.
+- Added the `run_fos.ps1` Windows one-command workflow.
+- Added static release-contract checks and automated tests.
+- Completed architecture, user, privacy, backup, maintenance and release docs.
+- Preserved all v0.6.0 financial calculations and operating thresholds.
+
 ## v0.6.0
 
-- Added a deterministic financial insight engine.
-- Added recent spending evolution using the latest complete year, prior year,
-  and up to three comparison-eligible benchmark years.
-- Added `Insights`, `Action_Plan`, `Spending_Evolution`, and
-  `Insight_Definitions` workbook sheets.
-- Added executive takeaways to the dashboard.
-- Added measurable liquidity, debt, fixed-cost, wealth-building, spending-review,
-  and data-quality actions.
-- Added tests and end-to-end verification for the insight layer.
-- Retained all v0.5.0 extraction, reconciliation, KPI, and dashboard calculations.
+- Added deterministic financial insights, spending evolution and action plan.
 
 ## v0.5.0
 
@@ -23,7 +26,7 @@
 
 ## v0.4.0
 
-- Added annual KPIs, current snapshot, and provisional FPI.
+- Added annual KPIs, current snapshot and provisional FPI.
 
 ## v0.3.0
 

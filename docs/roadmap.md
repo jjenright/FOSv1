@@ -6,4 +6,4 @@
 - v0.4.0 / v0.4.1 — KPI engine and verification hotfix — Complete
 - v0.5.0 — Executive dashboard — Complete
 - v0.6.0 — Financial insights and action plan — Complete
-- v1.0.0 — Production integration and final release — Next
+- v1.0.0 — Production integration and final release — Complete

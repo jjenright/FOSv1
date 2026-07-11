@@ -1,1 +1,1 @@
-feat(insights): add financial insights and prioritized action plan
+release: complete FOS v1.0.0 production integration

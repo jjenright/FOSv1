@@ -66,7 +66,7 @@ class ActionItem:
 
 @dataclass(frozen=True, slots=True)
 class InsightReport:
-    """Complete v0.6.0 insight package."""
+    """Complete v1.0.0 insight package."""
 
     latest_year: int
     prior_year: int | None
