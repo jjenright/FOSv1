@@ -1,4 +1,4 @@
-# Verify v0.2.0-alpha.2
+# Verify v0.2.0-alpha.3
 
 From the repository root with the virtual environment activated:
 
@@ -7,25 +7,13 @@ py -m pytest
 py scripts\verify.py
 ```
 
-Expected test result:
+Expected result: all tests pass and the script ends with `Verification PASSED`.
 
-```text
-6 passed
-```
-
-Expected verification result:
-
-```text
-FOS v0.2.0-alpha.2 verification
-- Core models: OK
-- 2010 layout: legacy
-- 2017 (old) layout: transitional
-- 2025 layout: current
-Verification PASSED
-```
-
-Optional workbook verification:
+To confirm the dictionary against the private historical workbook:
 
 ```powershell
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
+
+The workbook verification checks the annual sheet configuration and several critical
+category mappings used by the current layout.

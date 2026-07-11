@@ -2,24 +2,17 @@
 
 ## Added
 
-- `src/models/category.py`
-- `src/models/transaction.py`
-- `src/models/import_session.py`
-- `src/models/import_result.py`
-- `src/extract/layout_detector.py`
-- `tests/test_models.py`
-- `tests/test_layout_detector.py`
-- `scripts/verify.py`
-- `INSTALL.md`
-- `VERIFY.md`
-- `CHANGELOG.md`
+- `src/transform/category_registry.py`
+- `tests/test_category_registry.py`
 
 ## Updated
 
+- `config/categories.yaml`
+- `src/transform/__init__.py`
+- `scripts/verify.py`
 - `README.md`
-- `.gitignore`
-- `requirements.txt`
-- `config/layouts.yaml`
-- `src/models/__init__.py`
-- `src/extract/__init__.py`
-- `src/update.py`
+- `INSTALL.md`
+- `VERIFY.md`
+- `CHANGELOG.md`
+- `VERSION`
+- `COMMIT_MESSAGE.txt`

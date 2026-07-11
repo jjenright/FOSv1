@@ -1,8 +1,4 @@
-"""Verify the rebuilt Commit 1 and Commit 2 components.
-
-Optionally pass the source workbook path to compare its annual worksheet names
-with ``config/layouts.yaml`` without reading financial cell data.
-"""
+"""Verify the FOS v0.2.0-alpha.3 components."""
 
 from __future__ import annotations
 
@@ -19,6 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.extract import LayoutDetector  # noqa: E402
 from src.models import Category, ImportResult, ImportSession, Transaction  # noqa: E402,F401
+from src.transform import CategoryRegistry  # noqa: E402
 
 
 def workbook_sheet_names(workbook_path: Path) -> list[str]:
@@ -36,19 +33,57 @@ def workbook_sheet_names(workbook_path: Path) -> list[str]:
     return [sheet.attrib["name"] for sheet in sheets]
 
 
+def verify_required_workbook_aliases(workbook_path: Path, registry: CategoryRegistry) -> None:
+    try:
+        from openpyxl import load_workbook
+    except ImportError as exc:  # pragma: no cover - dependency check
+        raise RuntimeError("openpyxl is required for workbook category verification.") from exc
+
+    workbook = load_workbook(workbook_path, read_only=True, data_only=False)
+    annual_pattern = re.compile(r"20\d{2}( \(old\))?")
+    labels: set[str] = set()
+    for sheet_name in workbook.sheetnames:
+        if not annual_pattern.fullmatch(sheet_name):
+            continue
+        worksheet = workbook[sheet_name]
+        for row in worksheet.iter_rows():
+            for cell in row:
+                if isinstance(cell.value, str):
+                    labels.add(" ".join(cell.value.split()))
+
+    required = {
+        "Costco": "FOD001",
+        "Mortgage (21st)": "HOU001",
+        "Fuel": "TRA002",
+        "Visa payment": "TRF005",
+        "Questrade TFSA": "TRF002",
+        "Canadian Tire": "HOU012",
+    }
+    for label, expected_id in required.items():
+        if label not in labels:
+            raise ValueError(f"Required workbook label not found: {label}")
+        actual_id = registry.lookup(label).category_id
+        if actual_id != expected_id:
+            raise ValueError(
+                f"Workbook label '{label}' mapped to '{actual_id}', expected '{expected_id}'."
+            )
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Verify FOS v0.2.0-alpha.2")
-    parser.add_argument(
-        "--workbook",
-        type=Path,
-        help="Optional path to the private Budget workbook.",
-    )
+    parser = argparse.ArgumentParser(description="Verify FOS v0.2.0-alpha.3")
+    parser.add_argument("--workbook", type=Path, help="Optional private Budget workbook path.")
     args = parser.parse_args()
 
     detector = LayoutDetector(PROJECT_ROOT / "config" / "layouts.yaml")
+    registry = CategoryRegistry(PROJECT_ROOT / "config" / "categories.yaml")
 
-    print("FOS v0.2.0-alpha.2 verification")
+    print("FOS v0.2.0-alpha.3 verification")
     print("- Core models: OK")
+    print(f"- Configured categories: {registry.category_count()}")
+    print(f"- Configured aliases: {registry.alias_count()}")
+    print(f"- Costco mapping: {registry.lookup('Costco').display_name}")
+    print(f"- Canadian Tire mapping: {registry.lookup('Canadian Tire').display_name}")
+    print(f"- Mortgage (21st) mapping: {registry.lookup('Mortgage (21st)').display_name}")
     print(f"- 2010 layout: {detector.detect('2010')}")
     print(f"- 2017 (old) layout: {detector.detect('2017 (old)')}")
     print(f"- 2025 layout: {detector.detect('2025')}")
@@ -68,6 +103,8 @@ def main() -> int:
             print(f"- Configured sheets absent from workbook: {', '.join(extra)}")
             return 1
         print("- Workbook/layout configuration match: OK")
+        verify_required_workbook_aliases(args.workbook, registry)
+        print("- Workbook/category dictionary checks: OK")
 
     print("Verification PASSED")
     return 0

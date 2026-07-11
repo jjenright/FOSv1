@@ -21,3 +21,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
 Do not copy the personal budget workbook into the repository. Keep it elsewhere or in the ignored `workbook/` folder.
+
+## Commit 3
+
+Copy this package over the repository root, allow file replacement, then run the commands in `VERIFY.md`.

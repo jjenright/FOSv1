@@ -1,1 +1,827 @@
-# categories
+version: 0.2.0-alpha.3
+normalization:
+  case_insensitive: true
+  collapse_whitespace: true
+  normalize_apostrophes_and_dashes: true
+  remove_ordinal_due_dates: true
+categories:
+- category_id: INC001
+  display_name: Primary Employment Income
+  category_type: Income
+  master_category: Income
+  sub_category: Employment
+  financial_purpose: Income
+  weekly_budget: false
+  controllable: 'No'
+  aliases:
+  - JE's Pay
+  - Pay - JE
+  - Pay
+- category_id: INC002
+  display_name: Secondary Employment Income
+  category_type: Income
+  master_category: Income
+  sub_category: Employment
+  financial_purpose: Income
+  weekly_budget: false
+  controllable: 'No'
+  aliases:
+  - LP's Pay
+  - Pay - LP
+  - Pay - LP's EI
+  - LP's Pay (1st)
+  - LP's Pay (11th)
+  - LP's Pay (15th)
+  - LP's Pay (30th)
+- category_id: INC003
+  display_name: Other Income
+  category_type: Income
+  master_category: Income
+  sub_category: Other Income
+  financial_purpose: Income
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Other
+  - Overtime
+  - OT
+  - Tax refund
+- category_id: INC004
+  display_name: Cash-flow Adjustment
+  category_type: Income
+  master_category: Income
+  sub_category: Adjustment
+  financial_purpose: Cash Management
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Adjust
+  - adjust
+- category_id: TRF001
+  display_name: Savings Transfer
+  category_type: Transfer
+  master_category: Wealth Building
+  sub_category: Savings
+  financial_purpose: Wealth Building
+  weekly_budget: false
+  controllable: 'Yes'
+  aliases:
+  - Savings
+  - Joint savings
+  - Personal e-Savings
+  - Savings (taxes + $100 extra)
+  - Savings - for tires
+- category_id: TRF002
+  display_name: TFSA Contribution
+  category_type: Transfer
+  master_category: Wealth Building
+  sub_category: TFSA
+  financial_purpose: Wealth Building
+  weekly_budget: false
+  controllable: 'Yes'
+  aliases:
+  - Questrade TFSA
+  - J Questrade TFSA
+  - L Questrade TFSA
+- category_id: TRF003
+  display_name: RRSP or Pension Contribution
+  category_type: Transfer
+  master_category: Wealth Building
+  sub_category: Retirement Savings
+  financial_purpose: Wealth Building
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - RRSP
+  - JE's RRSP
+  - LP's RRSP
+  - LP'es RRSP
+  - L pension contribution
+- category_id: TRF004
+  display_name: RESP Contribution
+  category_type: Transfer
+  master_category: Wealth Building
+  sub_category: Education Savings
+  financial_purpose: Wealth Building
+  weekly_budget: false
+  controllable: 'Yes'
+  aliases:
+  - Ben's RESP
+- category_id: TRF005
+  display_name: Credit Card Payment
+  category_type: Transfer
+  master_category: Financial
+  sub_category: Credit Card Payment
+  financial_purpose: Debt Reduction
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Visa payment
+  - Visa Payment
+  - Mastercard payment
+  - Credit Card
+  - Credit card
+  - Mastercard
+  - Visa payment (food, fuel)
+- category_id: TRF006
+  display_name: Line of Credit Payment
+  category_type: Transfer
+  master_category: Financial
+  sub_category: Line of Credit
+  financial_purpose: Debt Reduction
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Credit line payment
+  - RBC Credit Line Payment
+  - Credit line
+  - Credit Line
+- category_id: TRF007
+  display_name: Internal Account Transfer
+  category_type: Transfer
+  master_category: Financial
+  sub_category: Internal Transfer
+  financial_purpose: Cash Management
+  weekly_budget: false
+  controllable: 'Yes'
+  aliases:
+  - Joint chequing
+  - Personal chequing
+  - Personal Chequing
+  - Personal Cheq
+  - Payment from chequing
+  - Tangerine
+  - Tangerine - expenses
+  - RBC US
+  - US visa
+- category_id: TRF008
+  display_name: Cash Withdrawal
+  category_type: Transfer
+  master_category: Financial
+  sub_category: Cash
+  financial_purpose: Cash Management
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Cash
+  - The "other" jar
+  - Cash (booze, entertainment)
+  - Cash (booze, wedding)
+- category_id: HOU001
+  display_name: Mortgage
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Mortgage
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: 'No'
+  aliases:
+  - Mortgage
+  - Joint chequing – Mortgage
+  - Joint chequing - Mortgage
+- category_id: HOU002
+  display_name: Rent
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Rent
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: 'No'
+  aliases:
+  - Rent
+- category_id: HOU003
+  display_name: Property Tax
+  category_type: Irregular Expense
+  master_category: Housing
+  sub_category: Property Tax
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: 'No'
+  aliases:
+  - 'Property Tax #1'
+  - 'Property tax #2'
+  - Prop tax
+  - 'Prop tax #2'
+- category_id: HOU004
+  display_name: Home Insurance
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Insurance
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Home insurance
+  - Home Insurance
+- category_id: HOU005
+  display_name: Electricity
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Utilities
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Hydro
+  - Electricity - Hydro Ottawa
+- category_id: HOU006
+  display_name: Natural Gas
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Utilities
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Enbridge
+  - Natural Gas - Enbridge
+  - Enbridge payment
+- category_id: HOU007
+  display_name: Water and Sewer
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Utilities
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Water and Sewer
+  - Ottawa Water and Sewer
+- category_id: HOU008
+  display_name: Internet
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Communications
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Internet
+  - Rogers Internet
+- category_id: HOU009
+  display_name: Mobile Phone
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Communications
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Rogers Wireless
+  - Cellphones
+  - LP's cell phone
+  - JE's cell phone
+  - Virgin (L cell 18th)
+  - Virgin (L cell 24th)
+- category_id: HOU010
+  display_name: Internet and Mobile Bundle
+  category_type: Fixed Expense
+  master_category: Housing
+  sub_category: Communications
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Rogers Wireless + Internet
+  - Rogers Wireless + Internet - 15th
+  - Virgin (Internet and J Cell)
+- category_id: HOU011
+  display_name: Home Maintenance and Renovation
+  category_type: Irregular Expense
+  master_category: Housing
+  sub_category: Maintenance
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Renos
+  - Home
+  - House
+  - Home stuff
+  - House stuff
+  - Home Depot
+  - Home depot
+  - Lowes
+  - Home Hardware
+  - Harding Fireplace
+  - Project
+  - Gardening
+  - Plumbing subscription
+  - Pool supplies
+  - Pool stuff
+- category_id: HOU012
+  display_name: Household Supplies
+  category_type: Variable Expense
+  master_category: Household
+  sub_category: Supplies
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Canadian Tire
+  - Canadian tire
+  - Walmart
+  - Amazon
+  - Dollarama
+  - Dollar store
+  - House supplies
+  - Stuff
+- category_id: HOU013
+  display_name: House Cleaning
+  category_type: Variable Expense
+  master_category: Household
+  sub_category: Cleaning Service
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Cleaners
+- category_id: HOU014
+  display_name: Furniture and Decor
+  category_type: Irregular Expense
+  master_category: Household
+  sub_category: Furniture
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Ikea
+  - Mixtiles
+  - Kitchen table
+- category_id: HOU015
+  display_name: Electronics and Appliances
+  category_type: Irregular Expense
+  master_category: Household
+  sub_category: Electronics
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Best buy
+  - BestBuy
+  - Apple
+  - TV
+  - Wii Stuff
+- category_id: HOU016
+  display_name: Clothing and Footwear
+  category_type: Variable Expense
+  master_category: Household
+  sub_category: Clothing
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Clothes
+  - clothes
+  - Shoes
+  - Winter boots
+  - Dry cleaning
+- category_id: TRA001
+  display_name: Vehicle Loan Payment
+  category_type: Fixed Expense
+  master_category: Transportation
+  sub_category: Vehicle Loan
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: 'No'
+  aliases:
+  - Car Payment
+  - Additional Car Payment
+  - Additional car payment
+  - Truck (2nd Friday)
+- category_id: TRA002
+  display_name: Fuel
+  category_type: Variable Expense
+  master_category: Transportation
+  sub_category: Fuel
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Gas
+  - Fuel
+- category_id: TRA003
+  display_name: Vehicle Insurance
+  category_type: Fixed Expense
+  master_category: Transportation
+  sub_category: Insurance
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Car insurance
+  - Car insurance Payment
+  - Car Insurance
+  - Auto insurance
+  - Truck insurance
+- category_id: TRA004
+  display_name: Vehicle Maintenance and Repair
+  category_type: Irregular Expense
+  master_category: Transportation
+  sub_category: Maintenance
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Car repair
+  - Car maintenance
+  - Car maintenance (to Joint)
+  - Volvo windshield
+- category_id: TRA005
+  display_name: Parking and Transit
+  category_type: Variable Expense
+  master_category: Transportation
+  sub_category: Parking and Transit
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Parking
+  - Parking/Bus
+  - Taxi
+- category_id: TRA006
+  display_name: Vehicle Registration and Licensing
+  category_type: Irregular Expense
+  master_category: Transportation
+  sub_category: Registration
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: 'No'
+  aliases:
+  - License renewal
+  - License Plate renewal
+  - Parking Ticket
+- category_id: TRA007
+  display_name: Vehicle Cleaning
+  category_type: Variable Expense
+  master_category: Transportation
+  sub_category: Car Wash
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Car wash
+  - Car cleaning
+- category_id: TRA008
+  display_name: Vehicle Rental
+  category_type: Irregular Expense
+  master_category: Transportation
+  sub_category: Rental
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Car rental
+- category_id: FOD001
+  display_name: Groceries
+  category_type: Variable Expense
+  master_category: Food
+  sub_category: Groceries
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Food
+  - Groceries
+  - Costco
+  - costco
+- category_id: FOD002
+  display_name: Dining Out
+  category_type: Variable Expense
+  master_category: Food
+  sub_category: Dining Out
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Eating out
+  - EAting out
+  - Date night
+  - Dairy Queen
+- category_id: FOD003
+  display_name: Alcohol
+  category_type: Variable Expense
+  master_category: Lifestyle
+  sub_category: Alcohol
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Alcohol
+  - Beer
+  - Liquor
+  - Booze
+  - LCBO
+- category_id: FOD004
+  display_name: Coffee and Snacks
+  category_type: Variable Expense
+  master_category: Food
+  sub_category: Snacks
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Starbucks
+  - Nayax
+- category_id: FAM001
+  display_name: Childcare
+  category_type: Fixed Expense
+  master_category: Family
+  sub_category: Childcare
+  financial_purpose: Family
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Daycare
+  - Extra daycare
+- category_id: FAM002
+  display_name: Child Activities and Camps
+  category_type: Irregular Expense
+  master_category: Family
+  sub_category: Activities
+  financial_purpose: Family
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Hockey
+  - Hockey game
+  - Swimming
+  - Camp deposit
+- category_id: FAM003
+  display_name: Gifts and Celebrations
+  category_type: Irregular Expense
+  master_category: Family
+  sub_category: Gifts
+  financial_purpose: Family
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Gifts
+  - Gift
+  - Wedding
+  - Christmas stuff
+  - Flowers
+  - Party
+- category_id: FAM004
+  display_name: Education
+  category_type: Irregular Expense
+  master_category: Family
+  sub_category: Education
+  financial_purpose: Family
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Algonquin French Course
+  - French book
+- category_id: PET001
+  display_name: Pet Food and Supplies
+  category_type: Variable Expense
+  master_category: Pets
+  sub_category: Food and Supplies
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Pet food
+  - Petfood
+  - Dog food
+  - Dogfood
+  - Petsmart
+  - Pet Value
+- category_id: PET002
+  display_name: Veterinary Care
+  category_type: Irregular Expense
+  master_category: Pets
+  sub_category: Veterinary
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Vet
+  - Vetrinarian
+- category_id: PET003
+  display_name: Pet Boarding
+  category_type: Irregular Expense
+  master_category: Pets
+  sub_category: Boarding
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Kennel
+  - Dog kennel
+- category_id: HLT001
+  display_name: Pharmacy and Medical
+  category_type: Variable Expense
+  master_category: Health
+  sub_category: Medical
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Pharmacy
+  - Medicine
+  - Antibiotics
+  - Shoppers
+  - Shoppers Drug Mart
+  - Shoppers Drugmart
+- category_id: HLT002
+  display_name: Dental
+  category_type: Irregular Expense
+  master_category: Health
+  sub_category: Dental
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Dentist
+  - Dental Insurance
+- category_id: HLT003
+  display_name: Vision Care
+  category_type: Irregular Expense
+  master_category: Health
+  sub_category: Vision
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Optometrist
+  - Sunglasses
+- category_id: HLT004
+  display_name: Therapy
+  category_type: Variable Expense
+  master_category: Health
+  sub_category: Therapy
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Therapist
+  - Therapist L
+- category_id: HLT005
+  display_name: Massage
+  category_type: Variable Expense
+  master_category: Health
+  sub_category: Massage
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: Partial
+  aliases:
+  - Massage
+- category_id: HLT006
+  display_name: Fitness
+  category_type: Fixed Expense
+  master_category: Health
+  sub_category: Fitness
+  financial_purpose: Lifestyle
+  weekly_budget: false
+  controllable: 'Yes'
+  aliases:
+  - Goodlife
+  - Goodlife Payment
+- category_id: PER001
+  display_name: Haircuts and Personal Care
+  category_type: Variable Expense
+  master_category: Personal
+  sub_category: Personal Care
+  financial_purpose: Essential Living
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Haircut
+  - J Haircut
+- category_id: LIF001
+  display_name: Entertainment and Subscriptions
+  category_type: Variable Expense
+  master_category: Lifestyle
+  sub_category: Entertainment
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Movies
+  - Movie
+  - Netflix
+  - Netflix (12th)
+  - Zip.ca
+  - iTunes
+  - DAZN
+  - Audible
+  - Blizzard account
+  - LinkedIn
+- category_id: LIF002
+  display_name: Books
+  category_type: Variable Expense
+  master_category: Lifestyle
+  sub_category: Books
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Books
+  - Book
+  - Chapters
+- category_id: LIF003
+  display_name: Hobbies and Recreation
+  category_type: Variable Expense
+  master_category: Lifestyle
+  sub_category: Recreation
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Golf
+  - Camping
+  - Snowboarding
+  - Game
+- category_id: LIF004
+  display_name: Travel and Vacation
+  category_type: Irregular Expense
+  master_category: Lifestyle
+  sub_category: Travel
+  financial_purpose: Lifestyle
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Tremblant
+  - Trip
+  - Flights
+  - Hotel
+  - Quebec trip
+  - Cottage
+- category_id: FIN001
+  display_name: Student Loan Payment
+  category_type: Fixed Expense
+  master_category: Financial
+  sub_category: Student Loan
+  financial_purpose: Debt Reduction
+  weekly_budget: false
+  controllable: 'No'
+  aliases:
+  - Student Loans
+  - Student Loans (NSLSC)
+  - Student Loans (RBC)
+  - NSLSC Canada Student Loan
+  - RBC Canada Student Loan
+  - NSLSC - ON Additional payment
+  - NSLSC – CAN Additional Payment
+  - RBC - ON Additional payment
+  - RBC – CAN Additional Payment
+- category_id: FIN002
+  display_name: Loan and Credit Interest
+  category_type: Fixed Expense
+  master_category: Financial
+  sub_category: Interest
+  financial_purpose: Debt Cost
+  weekly_budget: false
+  controllable: 'No'
+  aliases:
+  - Loan Interest
+  - Loan interest
+  - Credit line interest
+  - Overdraft interest
+  - OD interest
+- category_id: FIN003
+  display_name: Bank Fees
+  category_type: Fixed Expense
+  master_category: Financial
+  sub_category: Bank Fees
+  financial_purpose: Debt Cost
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Bank fee
+  - Bank Fee
+  - Monthly bank fee
+  - Account Monthly Fee
+- category_id: FIN004
+  display_name: Life Insurance
+  category_type: Fixed Expense
+  master_category: Financial
+  sub_category: Insurance
+  financial_purpose: Essential Living
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - London Life Insurance
+- category_id: CAP001
+  display_name: Home Purchase or Down Payment
+  category_type: Capital
+  master_category: Capital
+  sub_category: Home Purchase
+  financial_purpose: Capital
+  weekly_budget: false
+  controllable: Partial
+  aliases:
+  - Downpayment
+- category_id: OTH001
+  display_name: Miscellaneous Expense
+  category_type: Variable Expense
+  master_category: Other
+  sub_category: Miscellaneous
+  financial_purpose: Other
+  weekly_budget: true
+  controllable: 'Yes'
+  aliases:
+  - Miscellaneous
+  - Purchase

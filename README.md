@@ -1,33 +1,32 @@
 # Family Financial Operating System (FOS)
 
-Current development release: **v0.2.0-alpha.2**
+Current development release: **v0.2.0-alpha.3**
 
-This release rebuilds the first two development commits as a runnable package:
+This release contains the first production category dictionary generated from the
+historical household budget workbook. It preserves the approved merchant mappings:
 
-1. Core financial domain models.
-2. Configuration-driven worksheet layout detection.
+- Costco → Groceries
+- Canadian Tire → Household Supplies
+- Walmart → Household Supplies
+- Amazon → Household Supplies
 
-The private household budget workbook is intentionally excluded from GitHub.
+It also adds a category registry that normalizes recurring due-date labels such as
+`Mortgage (21st)` and reports unknown categories rather than silently guessing.
 
-## Windows setup
+## Windows verification
 
-Open a terminal in the repository root and run:
+From the repository root with the virtual environment activated:
 
 ```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-py -m pip install --upgrade pip
 py -m pip install -r requirements.txt
 py -m pytest
 py scripts\verify.py
 ```
 
-To verify the layout configuration against your private workbook:
+Optional verification against the private workbook:
 
 ```powershell
 py scripts\verify.py --workbook "C:\path\to\Budget-Jason-original.xlsx"
 ```
 
-Expected result: `Verification PASSED`.
-
-See `INSTALL.md` and `VERIFY.md` for more detail.
+The private workbook must not be committed to GitHub.
