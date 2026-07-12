@@ -45,8 +45,8 @@ def test_loads_validated_records_into_fos_workbook(tmp_path) -> None:
         assert workbook['Exceptions'].max_row == 2
         assert workbook['Import_Log']['E2'].value == 'PASS'
         assert workbook['Dashboard']['B9'].value == '=SUM(FactIncome!F:F)'
-        assert workbook['FactTransactions']['H2'].value == '2025'
-        assert workbook['FactTransactions']['I2'].value in {'C2', 'E2'}
+        assert workbook['FactTransactions']['I2'].value == '2025'
+        assert workbook['FactTransactions']['J2'].value in {'C2', 'E2'}
         # An Excel table provides its own AutoFilter. A second worksheet-level
         # filter over the same range causes Excel to repair/remove the table.
         assert workbook['FactTransactions'].auto_filter.ref is None

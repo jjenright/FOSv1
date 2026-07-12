@@ -1,18 +1,17 @@
 # Family Financial Operating System (FOS)
 
-**v1.1.0 — Decision Intelligence**
+**v1.1.1 — Visa Transaction Integration**
 
 FOS imports the private family budget workbook, reconciles every dollar, calculates KPIs, and generates a local Excel operating system.
 
-v1.1.0 adds:
+v1.1.1 keeps the v1.1.0 Decision Intelligence tools and adds:
 
-- Direct discretionary-spending opportunities with 25%, 50%, and 100% reduction scenarios
-- Merchant intelligence and review suggestions without silently changing validated mappings
-- LOC payoff scenarios using configurable rate and weekly-payment assumptions
-- Twelve-month current-plan, focused-reduction, and maximum-reduction forecasts
-- Financial DNA and expanded category-history analysis
-- A filterable Spending Explorer with year, pay-period, category, and purpose drill-down
-- Decision Centre and direct-choice cards on the Dashboard
+- Automatic detection of the copied detailed Visa transaction sheet
+- Import of categorized purchases, refunds, interest, and fees
+- Exclusion of credit-card payments as transfers
+- Transaction ID duplicate protection
+- Transaction dates and merchant descriptions in FactTransactions and Spending Explorer
+- Visa import counts and dollar totals in validation output
 
 Run from PowerShell:
 
@@ -21,3 +20,8 @@ Run from PowerShell:
 ```
 
 Decision assumptions are stored in `config\decision_intelligence.yaml`. Private outputs are written to `output\` and excluded from Git.
+
+
+## Detailed Visa transactions
+
+When the private source workbook contains a copied `Import_2025`-style sheet, FOS detects it from the headers and merges the categorized rows into the matching annual year. Credit-card payments are excluded as transfers. Transaction IDs must be unique. The annual sheet should not separately contain the same individual purchases.

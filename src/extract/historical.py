@@ -10,6 +10,7 @@ from openpyxl import load_workbook
 from src.extract.current import CurrentExtractionResult, CurrentLayoutExtractor
 from src.extract.layout_detector import LayoutDetector
 from src.extract.legacy import LegacyLayoutExtractor
+from src.extract.visa import VisaImportStats, VisaSheetExtractor
 from src.transform import CategoryRegistry
 
 
@@ -32,6 +33,7 @@ class HistoricalExtractionResult:
 
     sheets: tuple[SheetExtraction, ...]
     excluded_sheets: tuple[str, ...] = ()
+    visa_import: VisaImportStats | None = None
 
     @property
     def records(self):
@@ -86,6 +88,7 @@ class HistoricalWorkbookExtractor:
         self.category_registry = category_registry
         self.current = CurrentLayoutExtractor(category_registry)
         self.legacy = LegacyLayoutExtractor(category_registry)
+        self.visa = VisaSheetExtractor(category_registry)
 
     def official_sheets(self) -> tuple[str, ...]:
         sheets = [
@@ -154,10 +157,39 @@ class HistoricalWorkbookExtractor:
                         result=result,
                     )
                 )
+
+            visa_extraction = self.visa.extract_workbook_sheets(workbook)
+            if visa_extraction.by_year:
+                by_year = {item.year: index for index, item in enumerate(extracted)}
+                missing_years = sorted(set(visa_extraction.by_year) - set(by_year))
+                if missing_years:
+                    raise ValueError(
+                        "Detailed Visa transactions were found for years without an "
+                        "imported annual worksheet: " + ", ".join(str(year) for year in missing_years)
+                    )
+                for year, visa_result in visa_extraction.by_year.items():
+                    index = by_year[year]
+                    annual = extracted[index]
+                    merged = CurrentExtractionResult(
+                        records=annual.result.records + visa_result.records,
+                        unknown_categories=(
+                            annual.result.unknown_categories + visa_result.unknown_categories
+                        ),
+                        source_rows=annual.result.source_rows + visa_result.source_rows,
+                        # Visa months are not pay periods and must not alter annual coverage.
+                        periods=annual.result.periods,
+                    )
+                    extracted[index] = SheetExtraction(
+                        sheet_name=annual.sheet_name,
+                        layout=f"{annual.layout}+visa",
+                        result=merged,
+                    )
+            visa_stats = visa_extraction.stats
         finally:
             workbook.close()
 
         return HistoricalExtractionResult(
             sheets=tuple(extracted),
             excluded_sheets=excluded,
+            visa_import=visa_stats,
         )

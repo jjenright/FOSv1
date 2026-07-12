@@ -18,6 +18,7 @@ from .historical import (
 )
 from .layout_detector import LayoutDetector
 from .legacy import LegacyLayoutExtractor
+from .visa import VisaExtractionResult, VisaImportStats, VisaSheetExtractor
 
 __all__ = [
     "CurrentExtractionResult",
@@ -34,4 +35,7 @@ __all__ = [
     "SheetExtraction",
     "SourceRow",
     "UnknownCategory",
+    "VisaExtractionResult",
+    "VisaImportStats",
+    "VisaSheetExtractor",
 ]

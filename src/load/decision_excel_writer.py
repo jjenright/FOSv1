@@ -112,10 +112,11 @@ class DecisionExcelWriter:
             for rec in s.result.records:
                 tx=rec.transaction; e=self.entries[tx.category_id]
                 if e['category_type']=='Income':continue
-                rows.append([tx.year,tx.period,tx.category_id,e['display_name'],e['master_category'],e['financial_purpose'],e['controllable'],float(tx.amount),tx.source_sheet,tx.source_cell])
-        self._table(ws,8,1,['Year','Period','CategoryID','Category','Master Category','Financial Purpose','Controllable','Amount ($)','Source Sheet','Source Cell'],rows,'SpendingExplorerTable')
-        for rr in range(9,9+len(rows)): ws.cell(rr,8).number_format=CURRENCY_FORMAT
-        ws.freeze_panes='A9'; self._widths(ws,[10,22,14,30,22,22,14,18,14,14,16])
+                rows.append([tx.year,tx.transaction_date,tx.period,tx.category_id,e['display_name'],tx.description,e['master_category'],e['financial_purpose'],e['controllable'],float(tx.amount),tx.source_sheet,tx.source_cell])
+        self._table(ws,8,1,['Year','Transaction Date','Period','CategoryID','Category','Description / Merchant','Master Category','Financial Purpose','Controllable','Amount ($)','Source Sheet','Source Cell'],rows,'SpendingExplorerTable')
+        for rr in range(9,9+len(rows)):
+            ws.cell(rr,2).number_format='yyyy-mm-dd'; ws.cell(rr,10).number_format=CURRENCY_FORMAT
+        ws.freeze_panes='A9'; self._widths(ws,[10,16,22,14,30,32,22,22,14,18,24,14])
     def _merchants(self,ws,r):
         rows=[[m.original_label,m.mapped_category_id,m.mapped_category,m.suggested_category_id,m.suggested_category,m.rule_id,m.confidence,m.opportunity_group,m.transaction_count,float(m.total_amount),m.latest_year,m.review_status] for m in r.merchants]; self._table(ws,1,1,['Original Label / Merchant','Mapped CategoryID','Mapped Category','Suggested CategoryID','Suggested Category','RuleID','Confidence','Opportunity Group','Occurrences','Historical Amount ($)','Latest Year','Review Status'],rows,'MerchantIntelligenceTable')
         for rr in range(2,2+len(rows)):

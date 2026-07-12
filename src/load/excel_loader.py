@@ -163,10 +163,11 @@ class ExcelFOSLoader:
         headers = [
             'RecordID',
             'Year',
+            'TransactionDate',
             'PayPeriod',
             'Section',
             'CategoryID',
-            'DisplayName',
+            'Description',
             'Amount ($)',
             'SourceSheet',
             'SourceCell',
@@ -181,6 +182,7 @@ class ExcelFOSLoader:
                 [
                     f'TXN-{transaction.year}-{number:04d}',
                     transaction.year,
+                    transaction.transaction_date,
                     transaction.period,
                     record.section,
                     transaction.category_id,
@@ -196,14 +198,13 @@ class ExcelFOSLoader:
         # The Excel table already owns its AutoFilter. Adding a worksheet-level
         # AutoFilter over the same range creates invalid overlapping filter
         # definitions that Excel repairs by removing the table.
-        worksheet.column_dimensions['G'].width = 15
-        worksheet['G2'].number_format = CURRENCY_FORMAT
         for row in range(2, worksheet.max_row + 1):
-            worksheet.cell(row, 7).number_format = CURRENCY_FORMAT
-            worksheet.cell(row, 7).font = Font(color=INPUT_BLUE)
-            worksheet.cell(row, 8).font = Font(color=SOURCE_GREEN)
+            worksheet.cell(row, 3).number_format = 'yyyy-mm-dd'
+            worksheet.cell(row, 8).number_format = CURRENCY_FORMAT
+            worksheet.cell(row, 8).font = Font(color=INPUT_BLUE)
             worksheet.cell(row, 9).font = Font(color=SOURCE_GREEN)
-        self._set_widths(worksheet, [20, 10, 25, 22, 14, 32, 15, 14, 12])
+            worksheet.cell(row, 10).font = Font(color=SOURCE_GREEN)
+        self._set_widths(worksheet, [20, 10, 15, 25, 22, 14, 34, 15, 24, 14])
 
     def _write_income(self, worksheet: Any, extraction: CurrentExtractionResult) -> None:
         headers = [

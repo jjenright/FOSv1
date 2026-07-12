@@ -5,10 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.extract import HistoricalWorkbookExtractor, LayoutDetector
+from src.extract import HistoricalExtractionResult, HistoricalWorkbookExtractor, LayoutDetector
 from src.insights import InsightReport, InsightsEngine
 from src.decision import DecisionIntelligenceEngine, DecisionReport
-from src.kpi import KPIEngine
+from src.kpi import AnnualKPI, CurrentSnapshot, KPIEngine
 from src.load import HistoricalExcelFOSLoader, LoadResult
 from src.transform import CategoryRegistry
 from src.validate import (
@@ -29,6 +29,9 @@ class HistoricalPipelineResult:
     exceptions_path: Path
     insight_report: InsightReport | None = None
     decision_report: DecisionReport | None = None
+    extraction: HistoricalExtractionResult | None = None
+    annual_kpis: tuple[AnnualKPI, ...] = ()
+    current_snapshot: CurrentSnapshot | None = None
 
 
 class HistoricalPipeline:
@@ -44,7 +47,7 @@ class HistoricalPipeline:
         workbook_path: str | Path,
         *,
         output_path: str | Path | None = None,
-        fos_version: str = "1.1.0",
+        fos_version: str = "1.1.1",
         sheets: tuple[str, ...] | list[str] | None = None,
     ) -> HistoricalPipelineResult:
         source = Path(workbook_path)
@@ -102,4 +105,7 @@ class HistoricalPipeline:
             exceptions_path=exceptions_path,
             insight_report=insight_report,
             decision_report=decision_report,
+            extraction=extraction,
+            annual_kpis=annual_kpis,
+            current_snapshot=current_snapshot,
         )

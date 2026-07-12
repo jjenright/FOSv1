@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from decimal import Decimal
 from pathlib import Path
 
 from src.historical_pipeline import HistoricalPipeline
@@ -65,6 +66,13 @@ def main() -> int:
     print(f"Income rows: {load.income_rows}")
     print(f"Exceptions: {load.exception_rows}")
     print(f"Warnings: {len(validation.warnings)}")
+    visa = getattr(result.validation, "metrics", {}).get("visa_imported_record_count", 0)
+    if int(visa):
+        print(f"Visa detail rows imported: {visa}")
+        print(
+            "Visa detail amount: $"
+            + f"{Decimal(str(result.validation.metrics['visa_imported_total'])):,.2f}"
+        )
     print(f"Validation summary: {result.validation_summary_path}")
     print(f"Exceptions report: {result.exceptions_path}")
     if getattr(result, "insight_report", None) is not None:

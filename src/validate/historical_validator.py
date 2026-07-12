@@ -101,6 +101,19 @@ class HistoricalImportValidator:
         )
         difference = source_total - normalized_total - unknown_total
 
+        visa = extraction.visa_import
+        if visa is not None and visa.duplicate_transaction_ids:
+            aggregate_issues.append(
+                ValidationIssue(
+                    code="DUPLICATE_VISA_TRANSACTION_IDS",
+                    severity="error",
+                    message=(
+                        f"{visa.duplicate_transaction_ids} duplicate Visa transaction IDs "
+                        "were detected. Remove the duplicates before importing."
+                    ),
+                )
+            )
+
         metrics: dict[str, int | str] = {
             "sheet_count": len(extraction.sheets),
             "excluded_sheet_count": len(extraction.excluded_sheets),
@@ -121,6 +134,14 @@ class HistoricalImportValidator:
             "warning_count": sum(
                 1 for issue in aggregate_issues if issue.severity == "warning"
             ),
+            "visa_source_sheet_count": len(visa.source_sheets) if visa else 0,
+            "visa_imported_record_count": visa.imported_records if visa else 0,
+            "visa_imported_total": str(visa.imported_total) if visa else "0",
+            "visa_skipped_transfer_count": visa.skipped_transfers if visa else 0,
+            "visa_duplicate_transaction_id_count": (
+                visa.duplicate_transaction_ids if visa else 0
+            ),
+            "visa_unknown_record_count": visa.unknown_records if visa else 0,
         }
 
         aggregate = ValidationReport(

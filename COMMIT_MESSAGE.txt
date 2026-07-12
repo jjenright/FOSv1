@@ -1,1 +1,1 @@
-feat(decisions): add FOS v1.1.0 decision intelligence
+feat(import): integrate categorized Visa transaction sheet

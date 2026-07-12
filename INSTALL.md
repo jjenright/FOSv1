@@ -1,4 +1,4 @@
-# Install FOS v1.1.0
+# Install FOS v1.1.1
 
 ```powershell
 py -m venv .venv
@@ -16,3 +16,8 @@ For routine updates after tests have passed:
 ```
 
 Keep source and generated spreadsheets private.
+
+
+## Visa sheet requirements
+
+Copy the cleaned `Import_2025` sheet into the private source workbook. Keep the columns `TransactionID`, `TransactionDate`, `Amount ($)`, `TransactionType`, and `CategoryID`. The sheet name is flexible because FOS detects the header structure.

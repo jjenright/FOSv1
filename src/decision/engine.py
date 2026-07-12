@@ -60,12 +60,12 @@ class DecisionIntelligenceEngine:
         mapped={}
         for s in extraction.sheets:
             for rec in s.result.records:
-                tx=rec.transaction; mapped[(tx.source_sheet,tx.source_cell)]=tx.category_id
+                tx=rec.transaction; mapped[(tx.source_sheet,tx.source_cell)]=(tx.category_id,tx.year)
         grouped={}
         for s in extraction.sheets:
             for src in s.result.source_rows:
-                mid=mapped.get((src.source_sheet,src.source_cell)); rule=self._match_rule(src.original_name); sid=str(rule['suggested_category_id']) if rule else None; rid=str(rule['rule_id']) if rule else None; key=(src.original_name,mid,rid)
-                g=grouped.setdefault(key,{'count':0,'amount':ZERO,'latest':0,'rule':rule,'sid':sid}); g['count']+=1; g['amount']+=src.amount; g['latest']=max(g['latest'],int(src.source_sheet[:4]))
+                mapped_item=mapped.get((src.source_sheet,src.source_cell)); mid=mapped_item[0] if mapped_item else None; source_year=mapped_item[1] if mapped_item else s.year; rule=self._match_rule(src.original_name); sid=str(rule['suggested_category_id']) if rule else None; rid=str(rule['rule_id']) if rule else None; key=(src.original_name,mid,rid)
+                g=grouped.setdefault(key,{'count':0,'amount':ZERO,'latest':0,'rule':rule,'sid':sid}); g['count']+=1; g['amount']+=src.amount; g['latest']=max(g['latest'],source_year)
         out=[]
         for (label,mid,rid),g in grouped.items():
             rule=g['rule']; sid=g['sid']; mname=str(self.entries[mid]['display_name']) if mid else None; sname=str(self.entries[sid]['display_name']) if sid in self.entries else None; status='Mapped' if mid else ('Suggested — review before mapping' if sid else 'Unresolved')

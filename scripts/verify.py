@@ -300,76 +300,76 @@ def verify_private_workbook(workbook_path: Path) -> None:
     verify_configuration(workbook_path, detector)
     verify_dictionary_contract(registry)
 
-    extraction = HistoricalWorkbookExtractor(detector, registry).extract(workbook_path)
-    validation = HistoricalImportValidator(ImportValidator(registry)).validate(extraction)
-    metrics = verify_extraction_relationships(extraction, validation)
-
-    kpi_engine = KPIEngine(registry)
-    annual_kpis = kpi_engine.calculate_annual(extraction)
-    if len(annual_kpis) != len(extraction.sheets):
-        raise ValueError("Annual KPI count does not match imported annual worksheets.")
-    complete = [item for item in annual_kpis if item.coverage_status == "Complete"]
-    if not complete:
-        raise ValueError("No complete year is available for current financial KPIs.")
-
-    snapshot = kpi_engine.calculate_current_snapshot(workbook_path, annual_kpis)
-    verify_current_snapshot_consistency(snapshot)
-    insight_report = InsightsEngine(registry).analyze(extraction, annual_kpis, snapshot)
-    if insight_report.latest_year != snapshot.latest_complete_year:
-        raise ValueError("Insight latest year does not match the current snapshot year.")
-    if len(insight_report.insights) != 6 or len(insight_report.actions) != 6:
-        raise ValueError("The production insight layer must generate six insights and six actions.")
-    expected_target = (
-        next(item for item in annual_kpis if item.year == insight_report.latest_year).core_spending
-        / Decimal("12")
-        * insight_report.emergency_target_months
-    )
-    expected_gap = max(ZERO, expected_target - snapshot.savings_cash)
-    if insight_report.emergency_target_amount != expected_target:
-        raise ValueError("Emergency-reserve target calculation mismatch.")
-    if insight_report.emergency_fund_gap != expected_gap:
-        raise ValueError("Emergency-reserve funding gap mismatch.")
-
-    decision_report = DecisionIntelligenceEngine(
-        registry, PROJECT_ROOT / "config" / "decision_intelligence.yaml"
-    ).analyze(extraction, annual_kpis, snapshot)
-    if decision_report.latest_year != snapshot.latest_complete_year:
-        raise ValueError("Decision-intelligence latest year does not match the current snapshot year.")
-    if not decision_report.opportunities:
-        raise ValueError("Decision intelligence did not identify any spending opportunities.")
-    if len(decision_report.forecast_summaries) != 3:
-        raise ValueError("Decision intelligence must generate three forecast scenarios.")
-    expected_forecast_rows = int(decision_report.assumptions["forecast_months"]) * len(
-        decision_report.forecast_summaries
-    )
-    if len(decision_report.forecast_months) != expected_forecast_rows:
-        raise ValueError(
-            "Forecast monthly-row mismatch: "
-            f"expected {expected_forecast_rows}, found {len(decision_report.forecast_months)}."
-        )
-    baseline = decision_report.debt_scenarios[0]
-    focused = next(
-        (item for item in decision_report.debt_scenarios if "50%" in item.scenario),
-        None,
-    )
-    if focused is None or focused.payoff_weeks > baseline.payoff_weeks:
-        raise ValueError("Focused debt scenario does not improve on the current LOC plan.")
-
-    with TemporaryDirectory() as temporary_dir:
+    verification_root = PROJECT_ROOT / "output"
+    verification_root.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(dir=verification_root) as temporary_dir:
         output = Path(temporary_dir) / "Financial_Operating_System.xlsx"
         pipeline = HistoricalPipeline(PROJECT_ROOT).run(
             workbook_path,
             output_path=output,
             fos_version=__version__,
         )
-        if not pipeline.validation_summary_path.is_file():
-            raise ValueError("Historical validation summary was not created.")
-        if not pipeline.exceptions_path.is_file():
-            raise ValueError("Historical exceptions report was not created.")
+        if pipeline.extraction is None:
+            raise ValueError("Historical pipeline did not return its extraction result.")
+        if pipeline.current_snapshot is None:
+            raise ValueError("No complete year is available for current financial KPIs.")
         if pipeline.insight_report is None:
             raise ValueError("Historical insight report was not created.")
         if pipeline.decision_report is None:
             raise ValueError("Decision-intelligence report was not created.")
+        if not pipeline.validation_summary_path.is_file():
+            raise ValueError("Historical validation summary was not created.")
+        if not pipeline.exceptions_path.is_file():
+            raise ValueError("Historical exceptions report was not created.")
+
+        extraction = pipeline.extraction
+        validation = pipeline.validation
+        annual_kpis = pipeline.annual_kpis
+        snapshot = pipeline.current_snapshot
+        insight_report = pipeline.insight_report
+        decision_report = pipeline.decision_report
+        metrics = verify_extraction_relationships(extraction, validation)
+
+        if len(annual_kpis) != len(extraction.sheets):
+            raise ValueError("Annual KPI count does not match imported annual worksheets.")
+        verify_current_snapshot_consistency(snapshot)
+        if insight_report.latest_year != snapshot.latest_complete_year:
+            raise ValueError("Insight latest year does not match the current snapshot year.")
+        if len(insight_report.insights) != 6 or len(insight_report.actions) != 6:
+            raise ValueError("The production insight layer must generate six insights and six actions.")
+        expected_target = (
+            next(item for item in annual_kpis if item.year == insight_report.latest_year).core_spending
+            / Decimal("12")
+            * insight_report.emergency_target_months
+        )
+        expected_gap = max(ZERO, expected_target - snapshot.savings_cash)
+        if insight_report.emergency_target_amount != expected_target:
+            raise ValueError("Emergency-reserve target calculation mismatch.")
+        if insight_report.emergency_fund_gap != expected_gap:
+            raise ValueError("Emergency-reserve funding gap mismatch.")
+
+        if decision_report.latest_year != snapshot.latest_complete_year:
+            raise ValueError("Decision-intelligence latest year does not match the current snapshot year.")
+        if not decision_report.opportunities:
+            raise ValueError("Decision intelligence did not identify any spending opportunities.")
+        if len(decision_report.forecast_summaries) != 3:
+            raise ValueError("Decision intelligence must generate three forecast scenarios.")
+        expected_forecast_rows = int(decision_report.assumptions["forecast_months"]) * len(
+            decision_report.forecast_summaries
+        )
+        if len(decision_report.forecast_months) != expected_forecast_rows:
+            raise ValueError(
+                "Forecast monthly-row mismatch: "
+                f"expected {expected_forecast_rows}, found {len(decision_report.forecast_months)}."
+            )
+        baseline = decision_report.debt_scenarios[0]
+        focused = next(
+            (item for item in decision_report.debt_scenarios if "50%" in item.scenario),
+            None,
+        )
+        if focused is None or focused.payoff_weeks > baseline.payoff_weeks:
+            raise ValueError("Focused debt scenario does not improve on the current LOC plan.")
+
         verify_generated_workbook(
             output,
             extraction=extraction,
@@ -388,6 +388,9 @@ def verify_private_workbook(workbook_path: Path) -> None:
     print(f"- Unmapped labels: {metrics['unknown_labels']}")
     print(f"- Source total: ${metrics['source_total']:,.2f}")
     print("- Reconciliation difference: $0.00")
+    if extraction.visa_import and extraction.visa_import.imported_records:
+        print(f"- Visa detail rows imported: {extraction.visa_import.imported_records}")
+        print(f"- Visa detail amount: ${extraction.visa_import.imported_total:,.2f}")
     print(f"- Latest complete year: {snapshot.latest_complete_year}")
     print(f"- Current net worth: ${snapshot.net_worth:,.2f}")
     if snapshot.fpi_score is not None:
