@@ -8,7 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_runtime_version_matches_version_file() -> None:
-    assert __version__ == "1.0.1"
+    assert __version__ == "1.1.0"
     assert get_version() == (PROJECT_ROOT / "VERSION").read_text(encoding="utf-8").strip()
 
 

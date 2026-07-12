@@ -24,13 +24,17 @@ REQUIRED_FILES = (
     "LICENSE",
     "config/categories.yaml",
     "config/layouts.yaml",
+    "config/decision_intelligence.yaml",
     "src/update.py",
+    "src/decision/engine.py",
+    "src/load/decision_excel_writer.py",
     "scripts/verify.py",
     "run_fos.ps1",
     "docs/user_guide.md",
     "docs/architecture.md",
     "docs/privacy_and_backup.md",
     "docs/maintenance.md",
+    "docs/decision_intelligence.md",
 )
 PRIVACY_PATTERNS = (
     "private_data/",

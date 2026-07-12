@@ -15,6 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.decision import DecisionIntelligenceEngine  # noqa: E402
 from src.extract import HistoricalWorkbookExtractor, LayoutDetector  # noqa: E402
 from src.historical_pipeline import HistoricalPipeline  # noqa: E402
 from src.insights import InsightsEngine  # noqa: E402
@@ -194,6 +195,7 @@ def verify_generated_workbook(
     annual_kpis,
     snapshot,
     insight_report,
+    decision_report,
 ) -> None:
     """Validate the generated XLSX structure and release outputs."""
     from openpyxl import load_workbook
@@ -257,6 +259,36 @@ def verify_generated_workbook(
             raise ValueError("Executive dashboard helper columns must remain hidden.")
         if dashboard.auto_filter.ref is not None:
             raise ValueError("Executive dashboard contains an unexpected AutoFilter.")
+        if dashboard["A70"].value != "Decision Intelligence — direct choices and next-step tools":
+            raise ValueError("Decision-intelligence dashboard section is missing.")
+
+        decision_table_checks = {
+            "Opportunities": ("SpendingOpportunitiesTable", len(decision_report.opportunities)),
+            "Debt_Planner": ("DebtScenarioTable", len(decision_report.debt_scenarios)),
+            "Forecast_12M": ("ForecastMonthlyTable", len(decision_report.forecast_months)),
+            "Financial_DNA": ("FinancialDNAProfilesTable", len(decision_report.category_dna)),
+            "Category_History": ("CategoryHistoryTable", len(decision_report.category_history)),
+            "Spending_Explorer": ("SpendingExplorerTable", expected_transactions),
+            "Merchant_Intelligence": ("MerchantIntelligenceTable", len(decision_report.merchants)),
+        }
+        for sheet_name, (table_name, expected_data_rows) in decision_table_checks.items():
+            worksheet = workbook[sheet_name]
+            if table_name not in worksheet.tables:
+                raise ValueError(f"{table_name} is missing from {sheet_name}.")
+            table = worksheet.tables[table_name]
+            min_cell, max_cell = table.ref.split(":")
+            from openpyxl.utils.cell import coordinate_from_string
+            min_row = coordinate_from_string(min_cell)[1]
+            max_row = coordinate_from_string(max_cell)[1]
+            if max_row - min_row != expected_data_rows:
+                raise ValueError(
+                    f"{table_name} row count mismatch: expected {expected_data_rows}, "
+                    f"found {max_row - min_row}."
+                )
+
+        forecast = workbook["Forecast_12M"]
+        if len(forecast._charts) != 1:
+            raise ValueError("Forecast_12M must contain one LOC-balance chart.")
     finally:
         workbook.close()
 
@@ -298,6 +330,31 @@ def verify_private_workbook(workbook_path: Path) -> None:
     if insight_report.emergency_fund_gap != expected_gap:
         raise ValueError("Emergency-reserve funding gap mismatch.")
 
+    decision_report = DecisionIntelligenceEngine(
+        registry, PROJECT_ROOT / "config" / "decision_intelligence.yaml"
+    ).analyze(extraction, annual_kpis, snapshot)
+    if decision_report.latest_year != snapshot.latest_complete_year:
+        raise ValueError("Decision-intelligence latest year does not match the current snapshot year.")
+    if not decision_report.opportunities:
+        raise ValueError("Decision intelligence did not identify any spending opportunities.")
+    if len(decision_report.forecast_summaries) != 3:
+        raise ValueError("Decision intelligence must generate three forecast scenarios.")
+    expected_forecast_rows = int(decision_report.assumptions["forecast_months"]) * len(
+        decision_report.forecast_summaries
+    )
+    if len(decision_report.forecast_months) != expected_forecast_rows:
+        raise ValueError(
+            "Forecast monthly-row mismatch: "
+            f"expected {expected_forecast_rows}, found {len(decision_report.forecast_months)}."
+        )
+    baseline = decision_report.debt_scenarios[0]
+    focused = next(
+        (item for item in decision_report.debt_scenarios if "50%" in item.scenario),
+        None,
+    )
+    if focused is None or focused.payoff_weeks > baseline.payoff_weeks:
+        raise ValueError("Focused debt scenario does not improve on the current LOC plan.")
+
     with TemporaryDirectory() as temporary_dir:
         output = Path(temporary_dir) / "Financial_Operating_System.xlsx"
         pipeline = HistoricalPipeline(PROJECT_ROOT).run(
@@ -311,6 +368,8 @@ def verify_private_workbook(workbook_path: Path) -> None:
             raise ValueError("Historical exceptions report was not created.")
         if pipeline.insight_report is None:
             raise ValueError("Historical insight report was not created.")
+        if pipeline.decision_report is None:
+            raise ValueError("Decision-intelligence report was not created.")
         verify_generated_workbook(
             output,
             extraction=extraction,
@@ -318,6 +377,7 @@ def verify_private_workbook(workbook_path: Path) -> None:
             annual_kpis=annual_kpis,
             snapshot=snapshot,
             insight_report=insight_report,
+            decision_report=decision_report,
         )
 
     print(f"- Official worksheets imported: {metrics['sheets']}")
@@ -332,7 +392,10 @@ def verify_private_workbook(workbook_path: Path) -> None:
     print(f"- Current net worth: ${snapshot.net_worth:,.2f}")
     if snapshot.fpi_score is not None:
         print(f"- Provisional FPI: {snapshot.fpi_score} ({snapshot.fpi_band})")
-    print("- Dashboard, tables, insights and action plan: OK")
+    print(f"- Spending opportunities: {len(decision_report.opportunities)}")
+    print(f"- Debt scenarios: {len(decision_report.debt_scenarios)}")
+    print(f"- Forecast scenarios: {len(decision_report.forecast_summaries)}")
+    print("- Dashboard, decision tools, insights and action plan: OK")
     print("- XLSX archive integrity: OK")
 
 

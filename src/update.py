@@ -72,6 +72,11 @@ def main() -> int:
         print(f"Latest complete year: {report.latest_year}")
         print(f"Insights generated: {len(report.insights)}")
         print(f"Actions generated: {len(report.actions)}")
+    if getattr(result, "decision_report", None) is not None:
+        decision = result.decision_report
+        print(f"Spending opportunities: {len(decision.opportunities)}")
+        print(f"Debt scenarios: {len(decision.debt_scenarios)}")
+        print(f"Forecast scenarios: {len(decision.forecast_summaries)}")
     return 0
 
 

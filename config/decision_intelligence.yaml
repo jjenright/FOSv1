@@ -1,0 +1,32 @@
+version: 1.1.0
+assumptions:
+  loc_annual_interest_rate: 0.065
+  loc_weekly_payment: 500
+  forecast_months: 12
+  emergency_target_months: 3
+  forecast_scenarios:
+    - {name: Current plan, reduction_rate: 0.0}
+    - {name: Focused reductions, reduction_rate: 0.5}
+    - {name: Maximum reductions, reduction_rate: 1.0}
+opportunities:
+  - {category_id: FOD003, name: Alcohol, essentiality: Non-essential, recommendation: Eliminate or set a strict annual cap., priority: 1}
+  - {category_id: FOD002, name: Dining Out, essentiality: Mostly discretionary, recommendation: Reduce restaurant and takeout spending before cutting groceries., priority: 2}
+  - {category_id: LIF001, name: Entertainment and Subscriptions, essentiality: Discretionary, recommendation: Cancel unused services and rotate subscriptions., priority: 3}
+  - {category_id: HOU013, name: House Cleaning, essentiality: Convenience service, recommendation: Review service frequency rather than assuming full elimination., priority: 4}
+  - {category_id: LIF003, name: Hobbies and Recreation, essentiality: Discretionary, recommendation: Set an annual recreation envelope., priority: 5}
+  - {category_id: LIF004, name: Travel and Vacation, essentiality: Discretionary, recommendation: Fund trips through a sinking fund before booking., priority: 6}
+  - {category_id: FOD004, name: Coffee and Snacks, essentiality: Discretionary, recommendation: Reduce convenience purchases., priority: 7}
+  - {category_id: LIF002, name: Books, essentiality: Discretionary, recommendation: Use the library or a fixed annual allowance., priority: 8}
+  - {category_id: TRA007, name: Vehicle Cleaning, essentiality: Discretionary, recommendation: Reduce paid cleaning frequency., priority: 9}
+merchant_rules:
+  - {rule_id: alcohol_lcbo, contains: [lcbo, beer, liquor, alcohol, booze], suggested_category_id: FOD003, opportunity_group: Alcohol, confidence: High}
+  - {rule_id: dining_restaurants, contains: [eating out, restaurant, dairy queen, peches & poivre], suggested_category_id: FOD002, opportunity_group: Dining Out, confidence: High}
+  - {rule_id: coffee_snacks, contains: [starbucks, nayax], suggested_category_id: FOD004, opportunity_group: Coffee and Snacks, confidence: High}
+  - {rule_id: entertainment_tickets, contains: [netflix, dazn, audible, itunes, movies, movie, comedy show, hockey tickets, jays ticket, sens tickets, circus, tv], suggested_category_id: LIF001, opportunity_group: Entertainment and Subscriptions, confidence: Medium}
+  - {rule_id: recreation, contains: [golf, camping, bowling, karting, snowboarding, rikochet, blacksmithing], suggested_category_id: LIF003, opportunity_group: Hobbies and Recreation, confidence: Medium}
+  - {rule_id: travel, contains: [vacation, trip, hotel, flights, montreal], suggested_category_id: LIF004, opportunity_group: Travel and Vacation, confidence: Medium}
+  - {rule_id: cleaning, contains: [cleaners, house cleaning], suggested_category_id: HOU013, opportunity_group: House Cleaning, confidence: High}
+  - {rule_id: pharmacy, contains: [pharmact, sdm, doctor, health], suggested_category_id: HLT001, opportunity_group: null, confidence: Medium}
+  - {rule_id: vehicle_maintenance, contains: [mazda tires, tires, car repair, car maintenance], suggested_category_id: TRA004, opportunity_group: null, confidence: Medium}
+  - {rule_id: home_maintenance, contains: [firewood, wood, hardware store, garden, culvert], suggested_category_id: HOU011, opportunity_group: null, confidence: Medium}
+  - {rule_id: pet_care, contains: [pet grooming, pets], suggested_category_id: PET001, opportunity_group: null, confidence: Medium}

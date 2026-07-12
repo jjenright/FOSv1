@@ -16,6 +16,8 @@ from openpyxl.utils import get_column_letter
 
 from src.extract import HistoricalExtractionResult
 from src.insights import InsightReport
+from src.decision import DecisionReport
+from src.load.decision_excel_writer import DecisionExcelWriter
 from src.kpi import AnnualKPI, CurrentSnapshot
 from src.load.excel_loader import (
     BLACK,
@@ -40,6 +42,14 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
 
     REQUIRED_SHEETS = (
         "Dashboard",
+        "Decision_Centre",
+        "Opportunities",
+        "Debt_Planner",
+        "Forecast_12M",
+        "Financial_DNA",
+        "Category_History",
+        "Spending_Explorer",
+        "Merchant_Intelligence",
         "Insights",
         "Action_Plan",
         "Spending_Evolution",
@@ -71,6 +81,7 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
         annual_kpis: tuple[AnnualKPI, ...] = (),
         current_snapshot: CurrentSnapshot | None = None,
         insight_report: InsightReport | None = None,
+        decision_report: DecisionReport | None = None,
     ) -> LoadResult:
         if not validation.is_valid:
             messages = "; ".join(issue.message for issue in validation.errors)
@@ -108,17 +119,16 @@ class HistoricalExcelFOSLoader(ExcelFOSLoader):
             output_path=destination,
         )
         self._write_dashboard_historical(
-            workbook["Dashboard"],
-            extraction=extraction,
-            validation=validation,
-            source_workbook=Path(source_workbook),
-            fos_version=fos_version,
-            imported_at=imported_at,
-            annual_kpis=annual_kpis,
-            current_snapshot=current_snapshot,
-            insight_report=insight_report,
+            workbook["Dashboard"], extraction=extraction, validation=validation,
+            source_workbook=Path(source_workbook), fos_version=fos_version,
+            imported_at=imported_at, annual_kpis=annual_kpis,
+            current_snapshot=current_snapshot, insight_report=insight_report,
         )
-
+        if decision_report is not None:
+            DecisionExcelWriter(self.category_registry).write_all(workbook, decision_report, extraction)
+        workbook.calculation.fullCalcOnLoad = True
+        workbook.calculation.forceFullCalc = True
+        workbook.calculation.calcMode = "auto"
         workbook.save(destination)
         workbook.close()
 

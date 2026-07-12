@@ -1,1 +1,1 @@
-fix(dashboard): plot hidden helper data in Excel charts
+feat(decisions): add FOS v1.1.0 decision intelligence

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from src.extract import HistoricalWorkbookExtractor, LayoutDetector
 from src.insights import InsightReport, InsightsEngine
+from src.decision import DecisionIntelligenceEngine, DecisionReport
 from src.kpi import KPIEngine
 from src.load import HistoricalExcelFOSLoader, LoadResult
 from src.transform import CategoryRegistry
@@ -27,6 +28,7 @@ class HistoricalPipelineResult:
     validation_summary_path: Path
     exceptions_path: Path
     insight_report: InsightReport | None = None
+    decision_report: DecisionReport | None = None
 
 
 class HistoricalPipeline:
@@ -42,7 +44,7 @@ class HistoricalPipeline:
         workbook_path: str | Path,
         *,
         output_path: str | Path | None = None,
-        fos_version: str = "1.0.1",
+        fos_version: str = "1.1.0",
         sheets: tuple[str, ...] | list[str] | None = None,
     ) -> HistoricalPipelineResult:
         source = Path(workbook_path)
@@ -74,11 +76,12 @@ class HistoricalPipeline:
             else None
         )
         insight_report = (
-            InsightsEngine(self.registry).analyze(
-                extraction, annual_kpis, current_snapshot
-            )
-            if current_snapshot is not None
-            else None
+            InsightsEngine(self.registry).analyze(extraction, annual_kpis, current_snapshot)
+            if current_snapshot is not None else None
+        )
+        decision_report = (
+            DecisionIntelligenceEngine(self.registry, self.project_root / "config" / "decision_intelligence.yaml").analyze(extraction, annual_kpis, current_snapshot)
+            if current_snapshot is not None else None
         )
 
         load_result = HistoricalExcelFOSLoader(self.registry).load_historical(
@@ -90,6 +93,7 @@ class HistoricalPipeline:
             annual_kpis=annual_kpis,
             current_snapshot=current_snapshot,
             insight_report=insight_report,
+            decision_report=decision_report,
         )
         return HistoricalPipelineResult(
             load_result=load_result,
@@ -97,4 +101,5 @@ class HistoricalPipeline:
             validation_summary_path=summary_path,
             exceptions_path=exceptions_path,
             insight_report=insight_report,
+            decision_report=decision_report,
         )
